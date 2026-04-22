@@ -190,8 +190,17 @@ export default function HackToolDetailPanel({
               accept="image/*"
               className="hidden"
               onChange={async (e) => {
+                console.log("[client] file input triggered");
+
                 const file = e.target.files?.[0];
-                if (!file) return;
+
+                if (!file) {
+                  console.log("[client] no file selected");
+                  return;
+                }
+
+                console.log("[client] file selected:", file.name);
+
                 await handleImageUpload(file);
               }}
             />
