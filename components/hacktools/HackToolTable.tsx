@@ -15,6 +15,7 @@ type HackTool = {
   saleUrl: string | null;
   latestTestDate?: string | null;
   createdAt?: string | null;
+  gameName?: string | null;
 };
 
 type Props = {
@@ -100,7 +101,8 @@ function getRecentDateClasses(date?: string | null) {
   const diffDays = Math.floor((now - value) / (1000 * 60 * 60 * 24));
 
   if (diffDays <= 3) return "bg-blue-50 text-blue-700 ring-1 ring-blue-100";
-  if (diffDays <= 14) return "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-100";
+  if (diffDays <= 14)
+    return "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-100";
   if (diffDays <= 30) return "bg-amber-50 text-amber-700 ring-1 ring-amber-100";
 
   return "bg-slate-50 text-slate-500";
@@ -130,7 +132,7 @@ export default function HackToolTable({
   return (
     <div className="rounded-2xl border border-slate-200 bg-white shadow-sm">
       <div className="max-h-[720px] overflow-auto">
-        <table className="w-full min-w-[1500px] table-fixed text-sm">
+        <table className="w-full min-w-[1540px] table-fixed text-sm">
           <thead className="sticky top-0 z-10 bg-slate-50 text-slate-600 shadow-sm">
             <tr className="border-b border-slate-200">
               <th className="w-[60px] px-4 py-4 text-left font-semibold">#</th>
@@ -141,7 +143,7 @@ export default function HackToolTable({
               <th className="w-[220px] px-4 py-4 text-left font-semibold">다운로드</th>
               <th className="w-[220px] px-4 py-4 text-left font-semibold">제작</th>
               <th className="w-[220px] px-4 py-4 text-left font-semibold">판매</th>
-              <th className="w-[96px] px-4 py-4 text-right font-semibold"></th>
+              <th className="w-[120px] px-4 py-4 text-right font-semibold"></th>
             </tr>
           </thead>
 
@@ -191,6 +193,7 @@ export default function HackToolTable({
                           autoFocus
                           disabled={isSaving}
                           onClick={(e) => e.stopPropagation()}
+                          onMouseDown={(e) => e.stopPropagation()}
                           onBlur={(e) => handleDateSave(tool.id, e.target.value)}
                           onKeyDown={(e) => {
                             if (e.key === "Enter") {
@@ -209,6 +212,7 @@ export default function HackToolTable({
                             e.stopPropagation();
                             setEditingId(tool.id);
                           }}
+                          onMouseDown={(e) => e.stopPropagation()}
                           className={`rounded-lg px-2.5 py-1 text-xs font-medium transition hover:opacity-90 ${getRecentDateClasses(
                             tool.latestTestDate
                           )}`}
@@ -231,7 +235,7 @@ export default function HackToolTable({
                     </td>
 
                     <td className="px-4 py-4">
-                      <div className="flex justify-end gap-2">
+                      <div className="flex min-h-8 justify-end gap-2">
                         {isSelected ? (
                           <>
                             <button
@@ -240,6 +244,7 @@ export default function HackToolTable({
                                 e.stopPropagation();
                                 onEdit(tool);
                               }}
+                              onMouseDown={(e) => e.stopPropagation()}
                               className="inline-flex h-8 w-8 items-center justify-center rounded-md bg-slate-100 text-blue-600 transition hover:bg-slate-200"
                               title="수정"
                               aria-label="수정"
@@ -253,6 +258,7 @@ export default function HackToolTable({
                                 e.stopPropagation();
                                 onDelete(tool.id);
                               }}
+                              onMouseDown={(e) => e.stopPropagation()}
                               className="inline-flex h-8 w-8 items-center justify-center rounded-md bg-slate-100 text-red-600 transition hover:bg-slate-200"
                               title="삭제"
                               aria-label="삭제"
@@ -261,7 +267,10 @@ export default function HackToolTable({
                             </button>
                           </>
                         ) : (
-                          <div className="h-8 w-8 opacity-0" />
+                          <>
+                            <div className="h-8 w-8 opacity-0" />
+                            <div className="h-8 w-8 opacity-0" />
+                          </>
                         )}
                       </div>
                     </td>
