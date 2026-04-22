@@ -81,13 +81,13 @@ function DeleteImageButton({
       title="이미지 삭제"
       aria-label="이미지 삭제"
       onClick={onClick}
-      className="inline-flex h-6 w-6 items-center rounded-full text-red-500 transition hover:text-red-600"
+      className="flex h-6 w-6 items-center justify-center rounded-full text-red-500 transition hover:text-red-600"
     >
       <svg
         xmlns="http://www.w3.org/2000/svg"
         viewBox="0 0 24 24"
         fill="currentColor"
-        className="h-5 w-5"
+        className="h-4 w-4"
       >
         <path d="M9 3h6l1 2h4v2H4V5h4l1-2Zm1 6h2v8h-2V9Zm4 0h2v8h-2V9ZM7 9h2v8H7V9Zm-1 12a2 2 0 0 1-2-2V7h16v12a2 2 0 0 1-2 2H6Z" />
       </svg>
