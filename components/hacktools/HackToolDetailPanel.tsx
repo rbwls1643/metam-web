@@ -57,6 +57,35 @@ function getColorBadgeClass(color?: string | null) {
   }
 }
 
+function ActionIconButton({
+  title,
+  variant,
+  onClick,
+  children,
+}: {
+  title: string;
+  variant: "primary" | "danger";
+  onClick: () => void;
+  children: React.ReactNode;
+}) {
+  const styles =
+    variant === "primary"
+      ? "bg-slate-100 text-blue-600 hover:bg-blue-50 hover:text-blue-700"
+      : "bg-red-50 text-red-500 hover:bg-red-100 hover:text-red-600";
+
+  return (
+    <button
+      type="button"
+      title={title}
+      aria-label={title}
+      onClick={onClick}
+      className={`inline-flex h-10 w-10 items-center justify-center rounded-full transition ${styles}`}
+    >
+      {children}
+    </button>
+  );
+}
+
 export default function HackToolDetailPanel({
   tool,
 }: {
@@ -249,25 +278,36 @@ export default function HackToolDetailPanel({
             <div className="flex items-center gap-3">
               <span className="text-sm font-semibold text-slate-400">{images.length}개</span>
 
-              <label
-                htmlFor="hacktool-image-upload"
-                className={`inline-flex cursor-pointer items-center rounded-2xl px-4 py-2 text-sm font-bold transition ${
-                  isUploading
-                    ? "bg-blue-100 text-blue-600"
-                    : "bg-slate-100 text-slate-700 hover:bg-slate-200"
-                }`}
+              <ActionIconButton
+                title="이미지 추가"
+                variant="primary"
+                onClick={() => inputRef.current?.click()}
               >
-                {isUploading ? "업로드 중..." : "이미지 추가"}
-              </label>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  fill="currentColor"
+                  className="h-5 w-5"
+                >
+                  <path d="M11 5h2v6h6v2h-6v6h-2v-6H5v-2h6V5Z" />
+                </svg>
+              </ActionIconButton>
 
               {mainImage && (
-                <button
-                  type="button"
+                <ActionIconButton
+                  title="이미지 삭제"
+                  variant="danger"
                   onClick={() => handleDeleteImage(mainImage.id)}
-                  className="inline-flex items-center rounded-2xl bg-red-50 px-4 py-2 text-sm font-bold text-red-600 transition hover:bg-red-100"
                 >
-                  이미지 삭제
-                </button>
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    fill="currentColor"
+                    className="h-5 w-5"
+                  >
+                    <path d="M9 3h6l1 2h4v2H4V5h4l1-2Zm1 6h2v8h-2V9Zm4 0h2v8h-2V9ZM7 9h2v8H7V9Zm-1 12a2 2 0 0 1-2-2V7h16v12a2 2 0 0 1-2 2H6Z" />
+                  </svg>
+                </ActionIconButton>
               )}
 
               <input

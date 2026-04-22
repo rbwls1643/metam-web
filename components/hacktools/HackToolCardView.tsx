@@ -70,6 +70,35 @@ function getRecentDateClasses(date?: string | null) {
   return "bg-slate-50 text-slate-500";
 }
 
+function ActionIconButton({
+  title,
+  variant,
+  onClick,
+  children,
+}: {
+  title: string;
+  variant: "primary" | "danger";
+  onClick: () => void;
+  children: React.ReactNode;
+}) {
+  const styles =
+    variant === "primary"
+      ? "bg-white/95 text-blue-600 ring-1 ring-slate-200 hover:bg-blue-50 hover:text-blue-700"
+      : "bg-white/95 text-red-500 ring-1 ring-slate-200 hover:bg-red-50 hover:text-red-600";
+
+  return (
+    <button
+      type="button"
+      title={title}
+      aria-label={title}
+      onClick={onClick}
+      className={`inline-flex h-9 w-9 items-center justify-center rounded-full shadow-sm backdrop-blur transition ${styles}`}
+    >
+      {children}
+    </button>
+  );
+}
+
 export default function HackToolCardView({ tools }: Props) {
   const [imageMap, setImageMap] = useState<Record<number, HackToolImage | null>>(
     {}
@@ -228,13 +257,42 @@ export default function HackToolCardView({ tools }: Props) {
                     </div>
                   </button>
 
-                  <button
-                    type="button"
-                    onClick={() => handleDeleteImage(tool.image!.id)}
-                    className="absolute right-3 top-3 rounded-lg bg-white/95 px-3 py-1.5 text-xs font-semibold text-red-600 shadow hover:bg-white"
-                  >
-                    이미지 삭제
-                  </button>
+                  <div className="absolute right-3 top-3 flex items-center gap-2">
+                    <ActionIconButton
+                      title="이미지 확대"
+                      variant="primary"
+                      onClick={() =>
+                        openLightbox(
+                          tool.image!.filePath,
+                          tool.image!.caption || tool.image!.fileName || tool.name
+                        )
+                      }
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 0 24 24"
+                        fill="currentColor"
+                        className="h-4 w-4"
+                      >
+                        <path d="M15 3h6v6h-2V6.41l-4.29 4.3-1.42-1.42 4.3-4.29H15V3ZM5 5v2.59l4.3 4.29-1.42 1.42L3.59 9H6V3h2v2H5Zm14 14v-2.59l-4.29-4.3 1.42-1.41 4.29 4.29V13h2v6h-6v-2h2.59ZM9.29 14.71l-4.3 4.29H8v2H2v-6h2v2.59l4.29-4.3 1.42 1.42Z" />
+                      </svg>
+                    </ActionIconButton>
+
+                    <ActionIconButton
+                      title="이미지 삭제"
+                      variant="danger"
+                      onClick={() => handleDeleteImage(tool.image!.id)}
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 0 24 24"
+                        fill="currentColor"
+                        className="h-4 w-4"
+                      >
+                        <path d="M9 3h6l1 2h4v2H4V5h4l1-2Zm1 6h2v8h-2V9Zm4 0h2v8h-2V9ZM7 9h2v8H7V9Zm-1 12a2 2 0 0 1-2-2V7h16v12a2 2 0 0 1-2 2H6Z" />
+                      </svg>
+                    </ActionIconButton>
+                  </div>
                 </>
               ) : (
                 <div className="flex h-full items-center justify-center text-sm text-slate-400">
