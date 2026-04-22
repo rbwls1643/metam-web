@@ -176,6 +176,7 @@ export default function HackToolEditModal({
                 <option value="보라">보라</option>
                 <option value="흰색">흰색</option>
                 <option value="검정">검정</option>
+                <option value="분홍">분홍</option>
                 <option value="기본">기본</option>
               </select>
             </div>

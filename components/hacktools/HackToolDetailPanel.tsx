@@ -50,6 +50,8 @@ function getColorBadgeClass(color?: string | null) {
       return "border-violet-200 bg-violet-50 text-violet-600";
     case "흰색":
       return "border-slate-200 bg-white text-slate-500";
+    case "분홍":
+      return "border-pink-200 bg-pink-50 text-pink-600"; 
     case "검정":
       return "border-slate-900 bg-slate-900 text-white";
     default:
