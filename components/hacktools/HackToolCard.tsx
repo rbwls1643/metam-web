@@ -1,81 +1,84 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useMemo, useState } from "react";
 import ColorChip from "./ColorChip";
 import ExternalDomainLink from "./ExternalDomainLink";
 import ImageLightbox from "./ImageLightbox";
+import NewBadge from "./NewBadge";
+
+type HackToolImage = {
+  id: number;
+  hackToolId: number;
+  fileName: string;
+  filePath: string;
+  fileSize: number | null;
+  mimeType: string | null;
+  caption: string | null;
+  uploadedAt: string | null;
+};
 
 type HackTool = {
   id: number;
   name: string;
-  region: string;
-  uiColorTag: string | null;
-  downloadUrl: string | null;
-  creatorUrl: string | null;
-  saleUrl: string | null;
+  mainToolName?: string | null;
+  region?: string | null;
+  uiColorTag?: string | null;
+  downloadUrl?: string | null;
+  creatorUrl?: string | null;
+  saleUrl?: string | null;
   latestTestDate?: string | null;
-};
-
-type HackToolImage = {
-  id: number;
-  filePath: string;
-  fileName: string;
-  caption: string;
+  createdAt?: string | null;
+  isNew?: boolean;
+  images?: HackToolImage[];
 };
 
 type Props = {
   tool: HackTool;
-  isSelectedForCompare: boolean;
-  onToggleCompare: (toolId: number) => void;
 };
 
 function formatDate(date?: string | null) {
   if (!date) return "-";
 
-  const d = new Date(date);
-  if (Number.isNaN(d.getTime())) return "-";
+  const parsed = new Date(date);
+  if (Number.isNaN(parsed.getTime())) return "-";
 
-  return `${d.getFullYear()}년 ${d.getMonth() + 1}월 ${d.getDate()}일`;
+  return `${parsed.getFullYear()}년 ${parsed.getMonth() + 1}월 ${parsed.getDate()}일`;
 }
 
-export default function HackToolCard({
-  tool,
-  isSelectedForCompare,
-  onToggleCompare,
-}: Props) {
-  const [image, setImage] = useState<HackToolImage | null>(null);
+function getRecentDateClasses(date?: string | null) {
+  if (!date) {
+    return "border-slate-200 bg-slate-100 text-slate-400";
+  }
+
+  const parsed = new Date(date);
+  if (Number.isNaN(parsed.getTime())) {
+    return "border-slate-200 bg-slate-100 text-slate-400";
+  }
+
+  const today = new Date();
+  const diff =
+    (today.getTime() -
+      new Date(parsed.getFullYear(), parsed.getMonth(), parsed.getDate()).getTime()) /
+    (1000 * 60 * 60 * 24);
+
+  if (diff <= 7) {
+    return "border-emerald-200 bg-emerald-50 text-emerald-700";
+  }
+
+  if (diff <= 30) {
+    return "border-amber-200 bg-amber-50 text-amber-700";
+  }
+
+  return "border-slate-200 bg-slate-100 text-slate-500";
+}
+
+export default function HackToolCard({ tool }: Props) {
   const [lightboxOpen, setLightboxOpen] = useState(false);
 
-  useEffect(() => {
-    let ignore = false;
-
-    const loadImage = async () => {
-      try {
-        const res = await fetch(`/api/hack-tool-images?hackToolId=${tool.id}`, {
-          cache: "no-store",
-        });
-
-        if (!res.ok) {
-          if (!ignore) setImage(null);
-          return;
-        }
-
-        const data = await res.json();
-
-        if (!ignore) {
-          setImage(Array.isArray(data) && data.length > 0 ? data[0] : null);
-        }
-      } catch {
-        if (!ignore) setImage(null);
-      }
-    };
-
-    loadImage();
-
-    return () => {
-      ignore = true;
-    };
-  }, [tool.id]);
+  const image = useMemo(() => {
+    if (!tool.images || tool.images.length === 0) return null;
+    return tool.images[0];
+  }, [tool.images]);
 
   return (
     <>
@@ -86,78 +89,80 @@ export default function HackToolCard({
         onClose={() => setLightboxOpen(false)}
       />
 
-      <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition hover:shadow-md">
-        <button
-          type="button"
-          onClick={() => image && setLightboxOpen(true)}
-          disabled={!image}
-          className="group block aspect-[16/10] w-full bg-slate-100"
-        >
+      <div className="overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-[0_10px_30px_rgba(15,23,42,0.05)]">
+        <div className="relative bg-slate-100">
           {image ? (
-            <div className="relative h-full w-full">
+            <button
+              type="button"
+              onClick={() => setLightboxOpen(true)}
+              className="block w-full"
+            >
               <img
                 src={image.filePath}
-                alt={image.caption || image.fileName}
-                className="h-full w-full object-cover"
+                alt={image.caption || image.fileName || tool.name}
+                className="h-[300px] w-full object-cover"
               />
-
-              <div className="absolute inset-0 flex items-center justify-center bg-black/0 opacity-0 transition group-hover:bg-black/30 group-hover:opacity-100">
-                <div className="rounded-full bg-white/90 px-3 py-1 text-xs font-medium text-slate-800">
-                  확대 보기
-                </div>
-              </div>
-            </div>
+            </button>
           ) : (
-            <div className="flex h-full items-center justify-center text-sm text-slate-400">
-              등록된 UI 이미지 없음
+            <div className="flex h-[300px] items-center justify-center bg-slate-100 text-slate-300">
+              등록된 이미지 없음
             </div>
           )}
-        </button>
 
-        <div className="p-5">
-          <div className="mb-3 flex items-start justify-between gap-3">
+          {image && (
+            <button
+              type="button"
+              onClick={() => setLightboxOpen(true)}
+              className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full bg-white/80 px-6 py-3 text-xl font-bold text-slate-700 shadow-lg backdrop-blur-sm"
+            >
+              확대보기
+            </button>
+          )}
+        </div>
+
+        <div className="space-y-6 px-8 py-8">
+          <div className="flex items-start justify-between gap-4">
             <div>
-              <div className="text-lg font-semibold text-slate-900">
-                {tool.name}
+              <div className="flex items-center gap-2">
+                <h3 className="text-[26px] font-extrabold tracking-tight text-slate-950">
+                  {tool.name}
+                </h3>
+                {tool.isNew && <NewBadge />}
               </div>
-              <div className="mt-1 text-sm text-slate-500">{tool.region}</div>
+              <p className="mt-3 text-[18px] font-medium text-slate-500">
+                {tool.region || "-"}
+              </p>
             </div>
 
-            <ColorChip color={tool.uiColorTag} />
+            <ColorChip color={tool.uiColorTag || "기본"} />
           </div>
 
-          <div className="mb-4 rounded-xl bg-slate-50 px-3 py-2 text-sm text-slate-600">
-            최근 테스트일: {formatDate(tool.latestTestDate)}
+          <div>
+            <span
+              className={`inline-flex rounded-2xl border px-4 py-2 text-[16px] font-semibold ${getRecentDateClasses(
+                tool.latestTestDate
+              )}`}
+            >
+              최근 테스트일: {formatDate(tool.latestTestDate)}
+            </span>
           </div>
 
-          <div className="mb-4 space-y-2 text-sm">
-            <div className="flex items-center justify-between gap-3">
-              <span className="text-slate-400">다운로드</span>
-              <ExternalDomainLink url={tool.downloadUrl} />
+          <div className="space-y-4 text-sm">
+            <div className="flex items-center justify-between gap-4">
+              <span className="text-[18px] font-medium text-slate-400">다운로드</span>
+              <ExternalDomainLink url={tool.downloadUrl || null} />
             </div>
 
-            <div className="flex items-center justify-between gap-3">
-              <span className="text-slate-400">제작</span>
-              <ExternalDomainLink url={tool.creatorUrl} />
+            <div className="flex items-center justify-between gap-4">
+              <span className="text-[18px] font-medium text-slate-400">제작</span>
+              <ExternalDomainLink url={tool.creatorUrl || null} />
             </div>
 
-            <div className="flex items-center justify-between gap-3">
-              <span className="text-slate-400">판매</span>
-              <ExternalDomainLink url={tool.saleUrl} />
+            <div className="flex items-center justify-between gap-4">
+              <span className="text-[18px] font-medium text-slate-400">판매</span>
+              <ExternalDomainLink url={tool.saleUrl || null} />
             </div>
           </div>
-
-          <button
-            type="button"
-            onClick={() => onToggleCompare(tool.id)}
-            className={`w-full rounded-xl px-4 py-2 text-sm font-medium transition ${
-              isSelectedForCompare
-                ? "bg-blue-600 text-white"
-                : "border border-slate-200 bg-white text-slate-600 hover:bg-slate-50"
-            }`}
-          >
-            {isSelectedForCompare ? "비교 선택됨" : "비교에 추가"}
-          </button>
         </div>
       </div>
     </>

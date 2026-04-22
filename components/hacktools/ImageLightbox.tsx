@@ -18,18 +18,20 @@ export default function ImageLightbox({
   useEffect(() => {
     if (!isOpen) return;
 
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") {
-        e.preventDefault();
-        e.stopPropagation();
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        event.preventDefault();
+        event.stopPropagation();
         onClose();
       }
     };
 
     document.addEventListener("keydown", handleKeyDown, true);
+    document.body.style.overflow = "hidden";
 
     return () => {
       document.removeEventListener("keydown", handleKeyDown, true);
+      document.body.style.overflow = "";
     };
   }, [isOpen, onClose]);
 
@@ -37,16 +39,19 @@ export default function ImageLightbox({
 
   return (
     <div
-      className="fixed inset-0 z-[9999] bg-black/80 flex items-center justify-center"
+      className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/80 p-6"
       onClick={onClose}
+      aria-modal="true"
+      role="dialog"
     >
       <div
-        className="relative max-w-[90vw] max-h-[90vh]"
-        onClick={(e) => e.stopPropagation()}
+        className="relative flex max-h-[92vh] max-w-[92vw] items-center justify-center"
+        onClick={(event) => event.stopPropagation()}
       >
         <button
+          type="button"
           onClick={onClose}
-          className="absolute top-4 right-4 bg-white text-black px-4 py-2 rounded-lg font-bold"
+          className="absolute right-4 top-4 z-10 rounded-xl bg-white/95 px-4 py-2 text-sm font-bold text-slate-900 shadow-lg transition hover:bg-white"
         >
           닫기
         </button>
@@ -54,7 +59,7 @@ export default function ImageLightbox({
         <img
           src={imageUrl}
           alt={imageAlt || ""}
-          className="max-w-full max-h-[90vh] object-contain rounded-lg"
+          className="max-h-[92vh] max-w-[92vw] rounded-2xl object-contain shadow-2xl"
         />
       </div>
     </div>
