@@ -183,6 +183,31 @@ export default function HackToolDetailPanel({
     }
   };
 
+  const handleDeleteImage = async (imageId: number) => {
+    const ok = window.confirm("이 UI 이미지를 삭제할까요?");
+    if (!ok) return;
+
+    try {
+      const res = await fetch(`/api/hack-tool-images/${imageId}`, {
+        method: "DELETE",
+      });
+
+      if (!res.ok) {
+        const data = await res.json().catch(() => null);
+        alert(data?.message || "이미지 삭제에 실패했습니다.");
+        return;
+      }
+
+      if (tool?.id) {
+        await fetchImages(tool.id);
+      }
+
+      setLightboxImage(null);
+    } catch {
+      alert("이미지 삭제 중 오류가 발생했습니다.");
+    }
+  };
+
   const mainImage = images.length > 0 ? images[0] : null;
 
   if (!tool) {
@@ -234,6 +259,16 @@ export default function HackToolDetailPanel({
               >
                 {isUploading ? "업로드 중..." : "이미지 추가"}
               </label>
+
+              {mainImage && (
+                <button
+                  type="button"
+                  onClick={() => handleDeleteImage(mainImage.id)}
+                  className="inline-flex items-center rounded-2xl bg-red-50 px-4 py-2 text-sm font-bold text-red-600 transition hover:bg-red-100"
+                >
+                  이미지 삭제
+                </button>
+              )}
 
               <input
                 ref={inputRef}
