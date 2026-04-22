@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import ImageLightbox from "./ImageLightbox";
 
 type HackToolImage = {
   id: number;
@@ -65,8 +64,9 @@ export default function HackToolDetailPanel({
 }) {
   const [images, setImages] = useState<HackToolImage[]>([]);
   const [isUploading, setIsUploading] = useState(false);
-  const [lightboxImage, setLightboxImage] = useState<string | null>(null);
+  const [lightboxImage, setLightboxImage] = useState<HackToolImage | null>(null);
   const inputRef = useRef<HTMLInputElement | null>(null);
+  const lightboxRef = useRef<HTMLDivElement | null>(null);
 
   const fetchImages = async (hackToolId: number) => {
     try {
@@ -96,6 +96,30 @@ export default function HackToolDetailPanel({
 
     fetchImages(tool.id);
   }, [tool?.id]);
+
+  useEffect(() => {
+    if (!lightboxImage) return;
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        event.preventDefault();
+        event.stopPropagation();
+        setLightboxImage(null);
+      }
+    };
+
+    document.addEventListener("keydown", handleKeyDown, true);
+    document.body.style.overflow = "hidden";
+
+    requestAnimationFrame(() => {
+      lightboxRef.current?.focus();
+    });
+
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown, true);
+      document.body.style.overflow = "";
+    };
+  }, [lightboxImage]);
 
   const handleImageUpload = async (file: File) => {
     if (!tool?.id) return;
@@ -229,7 +253,7 @@ export default function HackToolDetailPanel({
           {mainImage ? (
             <button
               type="button"
-              onClick={() => setLightboxImage(mainImage.filePath)}
+              onClick={() => setLightboxImage(mainImage)}
               className="block w-full overflow-hidden rounded-[24px] border border-slate-200 bg-slate-50"
             >
               <img
@@ -311,12 +335,36 @@ export default function HackToolDetailPanel({
         </div>
       </aside>
 
-      <ImageLightbox
-        isOpen={!!lightboxImage}
-        imageUrl={lightboxImage}
-        imageAlt={tool.name}
-        onClose={() => setLightboxImage(null)}
-      />
+      {lightboxImage && (
+        <div
+          className="fixed inset-0 z-[9999] bg-black/80"
+          onClick={() => setLightboxImage(null)}
+          aria-modal="true"
+          role="dialog"
+        >
+          <div
+            ref={lightboxRef}
+            tabIndex={-1}
+            className="relative flex h-full w-full items-center justify-center p-6 outline-none"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <button
+              type="button"
+              onClick={() => setLightboxImage(null)}
+              className="absolute right-6 top-6 z-10 inline-flex h-12 w-12 items-center justify-center rounded-full bg-white/95 text-3xl font-bold leading-none text-slate-900 shadow-lg transition hover:bg-white"
+              aria-label="닫기"
+            >
+              ×
+            </button>
+
+            <img
+              src={lightboxImage.filePath}
+              alt={lightboxImage.fileName}
+              className="max-h-[92vh] max-w-[92vw] rounded-2xl object-contain shadow-2xl"
+            />
+          </div>
+        </div>
+      )}
     </>
   );
 }
