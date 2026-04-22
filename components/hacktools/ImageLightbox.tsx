@@ -17,11 +17,16 @@ export default function ImageLightbox({
 }: ImageLightboxProps) {
   const dialogRef = useRef<HTMLDivElement | null>(null);
 
+  console.log("ImageLightbox mounted", { isOpen, imageUrl });
+
   useEffect(() => {
     if (!isOpen) return;
 
     const handleKeyDown = (event: KeyboardEvent) => {
+      console.log("keydown detected:", event.key);
+
       if (event.key === "Escape") {
+        console.log("ESC pressed -> closing");
         event.preventDefault();
         event.stopPropagation();
         onClose();
