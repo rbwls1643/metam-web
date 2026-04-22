@@ -80,9 +80,9 @@ export default function HackToolCard({
   return (
     <>
       <ImageLightbox
-        open={lightboxOpen}
+        isOpen={lightboxOpen}
         imageUrl={image?.filePath || null}
-        alt={image?.caption || image?.fileName || tool.name}
+        imageAlt={image?.caption || image?.fileName || tool.name}
         onClose={() => setLightboxOpen(false)}
       />
 
