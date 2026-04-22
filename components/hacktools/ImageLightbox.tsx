@@ -20,15 +20,16 @@ export default function ImageLightbox({
 
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
+        event.preventDefault();
         onClose();
       }
     };
 
-    document.addEventListener("keydown", handleKeyDown);
+    window.addEventListener("keydown", handleKeyDown);
     document.body.style.overflow = "hidden";
 
     return () => {
-      document.removeEventListener("keydown", handleKeyDown);
+      window.removeEventListener("keydown", handleKeyDown);
       document.body.style.overflow = "";
     };
   }, [isOpen, onClose]);
@@ -37,17 +38,20 @@ export default function ImageLightbox({
 
   return (
     <div
-      className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/80 px-6 py-6"
+      className="fixed inset-0 z-[9999] bg-black/80"
       onClick={onClose}
+      aria-modal="true"
+      role="dialog"
+      tabIndex={-1}
     >
       <div
-        className="relative flex h-full w-full max-w-7xl items-center justify-center"
+        className="relative flex h-full w-full items-center justify-center p-6"
         onClick={(event) => event.stopPropagation()}
       >
         <button
           type="button"
           onClick={onClose}
-          className="absolute right-0 top-0 z-10 inline-flex h-11 w-11 items-center justify-center rounded-full bg-white/95 text-2xl font-bold text-slate-900 shadow-lg transition hover:bg-white"
+          className="absolute right-6 top-6 z-10 inline-flex h-12 w-12 items-center justify-center rounded-full bg-white/95 text-3xl font-bold leading-none text-slate-900 shadow-lg transition hover:bg-white"
           aria-label="닫기"
         >
           ×
@@ -56,7 +60,7 @@ export default function ImageLightbox({
         <img
           src={imageUrl}
           alt={imageAlt}
-          className="max-h-full max-w-full rounded-2xl object-contain shadow-2xl"
+          className="max-h-[92vh] max-w-[92vw] rounded-2xl object-contain shadow-2xl"
         />
       </div>
     </div>

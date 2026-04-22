@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import ImageLightbox from "./ImageLightbox";
 
 type HackToolImage = {
@@ -68,9 +68,6 @@ export default function HackToolDetailPanel({
   const [lightboxImage, setLightboxImage] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement | null>(null);
 
-  const imageCount = useMemo(() => images.length, [images]);
-  const mainImage = images[0] ?? null;
-
   const fetchImages = async (hackToolId: number) => {
     try {
       const res = await fetch(`/api/hack-tool-images?hackToolId=${hackToolId}`, {
@@ -81,14 +78,12 @@ export default function HackToolDetailPanel({
       const data = await res.json();
 
       if (!res.ok) {
-        console.error("[client] image fetch failed:", data);
         setImages([]);
         return;
       }
 
       setImages(Array.isArray(data) ? data : []);
-    } catch (error) {
-      console.error("[client] image fetch error:", error);
+    } catch {
       setImages([]);
     }
   };
@@ -155,7 +150,6 @@ export default function HackToolDetailPanel({
 
       await fetchImages(tool.id);
     } catch (error) {
-      console.error("[client] image upload failed:", error);
       alert(`이미지 업로드 예외\n${error instanceof Error ? error.message : String(error)}`);
     } finally {
       setIsUploading(false);
@@ -164,6 +158,8 @@ export default function HackToolDetailPanel({
       }
     }
   };
+
+  const mainImage = images.length > 0 ? images[0] : null;
 
   if (!tool) {
     return (
@@ -200,8 +196,9 @@ export default function HackToolDetailPanel({
         <section className="mb-6">
           <div className="mb-3 flex items-center justify-between">
             <h4 className="text-[15px] font-extrabold text-slate-950">UI 이미지</h4>
+
             <div className="flex items-center gap-3">
-              <span className="text-sm font-semibold text-slate-400">{imageCount}개</span>
+              <span className="text-sm font-semibold text-slate-400">{images.length}개</span>
 
               <label
                 htmlFor="hacktool-image-upload"
