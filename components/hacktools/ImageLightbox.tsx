@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 
 type ImageLightboxProps = {
   isOpen: boolean;
@@ -15,21 +15,28 @@ export default function ImageLightbox({
   imageAlt = "확대 이미지",
   onClose,
 }: ImageLightboxProps) {
+  const dialogRef = useRef<HTMLDivElement | null>(null);
+
   useEffect(() => {
     if (!isOpen) return;
 
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
         event.preventDefault();
+        event.stopPropagation();
         onClose();
       }
     };
 
-    window.addEventListener("keydown", handleKeyDown);
+    document.addEventListener("keydown", handleKeyDown, true);
     document.body.style.overflow = "hidden";
 
+    requestAnimationFrame(() => {
+      dialogRef.current?.focus();
+    });
+
     return () => {
-      window.removeEventListener("keydown", handleKeyDown);
+      document.removeEventListener("keydown", handleKeyDown, true);
       document.body.style.overflow = "";
     };
   }, [isOpen, onClose]);
@@ -42,10 +49,11 @@ export default function ImageLightbox({
       onClick={onClose}
       aria-modal="true"
       role="dialog"
-      tabIndex={-1}
     >
       <div
-        className="relative flex h-full w-full items-center justify-center p-6"
+        ref={dialogRef}
+        tabIndex={-1}
+        className="relative flex h-full w-full items-center justify-center p-6 outline-none"
         onClick={(event) => event.stopPropagation()}
       >
         <button
