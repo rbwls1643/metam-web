@@ -81,7 +81,7 @@ function DeleteImageButton({
       title="이미지 삭제"
       aria-label="이미지 삭제"
       onClick={onClick}
-      className="inline-flex h-11 w-11 items-center justify-center rounded-full bg-white/80 text-red-500 shadow-md ring-1 ring-white/70 backdrop-blur-sm transition hover:bg-white hover:text-red-600"
+      className="inline-flex h-6 w-6 items-center rounded-full text-red-500 transition hover:text-red-600"
     >
       <svg
         xmlns="http://www.w3.org/2000/svg"
@@ -253,7 +253,7 @@ export default function HackToolCardView({ tools }: Props) {
                     </div>
                   </button>
 
-                  <div className="pointer-events-none absolute right-3 top-3 opacity-0 transition duration-200 group-hover:opacity-100">
+                  <div className="pointer-events-none absolute right-2 top-2 opacity-0 transition duration-200 group-hover:opacity-100">
                     <div className="pointer-events-auto">
                       <DeleteImageButton
                         onClick={() => handleDeleteImage(tool.image!.id)}
