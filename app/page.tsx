@@ -300,7 +300,10 @@ export default function Page() {
             </section>
           ) : (
             <section className="mt-4">
-              <HackToolCardView tools={filtered} />
+              <HackToolCardView 
+                tools={filtered}
+                onSelect={(tool) => setSelectedId(tool.id)}
+                 />
             </section>
           )}
         </div>
