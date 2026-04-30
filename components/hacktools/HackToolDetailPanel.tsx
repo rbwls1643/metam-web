@@ -4,8 +4,9 @@ import ColorChip from "./ColorChip";
 type HackTool = {
   id: number;
   name: string;
-  region: string;
-  uiColorTag: string;
+  gameName?: string | null;
+  region: string | null;
+  uiColorTag: string | null;
   latestTestDate?: string | null;
   detectionBypass?: string | null;
   testFeatures?: string | null;

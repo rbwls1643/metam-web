@@ -5,7 +5,7 @@ type HackTool = {
   id: number;
   name: string;
   region: string;
-  uiColorTag: string;
+  uiColorTag: string | null;
   latestTestDate?: string | null;
   detectionBypass?: string | null;
   testFeatures?: string | null;
