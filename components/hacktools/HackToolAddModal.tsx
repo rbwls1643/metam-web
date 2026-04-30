@@ -27,7 +27,7 @@ const UI_COLOR_OPTIONS = [
 
 const DETECTION_OPTIONS = ["우회 가능", "우회 불가"];
 
-const HACK_TYPE_OPTIONS = ["PAK", "일반", "반동제어"];
+const HACK_TYPE_OPTIONS = ["PAK", "일반", "반동제어", "슬롯제"];
 
 export default function HackToolAddModal({
   open,

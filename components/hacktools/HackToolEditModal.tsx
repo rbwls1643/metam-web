@@ -38,9 +38,9 @@ const UI_COLOR_OPTIONS = [
   "기본",
 ];
 
-const DETECTION_OPTIONS = ["확인 전", "우회 가능", "우회 불가", "부분 우회"];
+const DETECTION_OPTIONS = ["우회 가능", "우회 불가"];
 
-const HACK_TYPE_OPTIONS = ["PAK", "일반", "반동제어"];
+const HACK_TYPE_OPTIONS = ["PAK", "일반", "반동제어", "슬롯제"];
 
 function toInputDate(value?: string | null) {
   if (!value) return "";

@@ -106,7 +106,7 @@ export default function Page() {
 
     if (hackTypeFilter !== "전체") {
       next = next.filter(
-        (tool) => (tool.hackType || "일반 핵") === hackTypeFilter
+        (tool) => (tool.hackType || "일반") === hackTypeFilter
       );
     }
 
