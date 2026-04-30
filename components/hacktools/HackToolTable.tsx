@@ -32,6 +32,30 @@ function formatDate(date?: string | null) {
   return `${d.getFullYear()}년 ${d.getMonth() + 1}월 ${d.getDate()}일`;
 }
 
+function getTestDateClass(date?: string | null) {
+  if (!date) return "border-slate-200 bg-slate-50 text-slate-500";
+
+  const testDate = new Date(date);
+  if (Number.isNaN(testDate.getTime())) {
+    return "border-slate-200 bg-slate-50 text-slate-500";
+  }
+
+  const now = new Date();
+  const diffDays = Math.floor(
+    (now.getTime() - testDate.getTime()) / (1000 * 60 * 60 * 24)
+  );
+
+  if (diffDays <= 30) {
+    return "border-emerald-200 bg-emerald-50 text-emerald-700";
+  }
+
+  if (diffDays <= 60) {
+    return "border-amber-200 bg-amber-50 text-amber-700";
+  }
+
+  return "border-red-200 bg-red-50 text-red-700";
+}
+
 export default function HackToolTable({
   tools,
   selectedId,
@@ -42,7 +66,7 @@ export default function HackToolTable({
   return (
     <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white">
       <div className="overflow-x-auto">
-        <table className="min-w-[1200px] w-full text-sm">
+        <table className="w-full min-w-[1200px] text-sm">
           <thead className="bg-slate-50 text-slate-500">
             <tr className="border-b border-slate-200">
               <th className="px-5 py-4 text-left font-bold">#</th>
@@ -82,7 +106,11 @@ export default function HackToolTable({
                 <td className="px-5 py-4 text-slate-600">{tool.region}</td>
 
                 <td className="px-5 py-4">
-                  <span className="rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-bold text-emerald-700">
+                  <span
+                    className={`rounded-full border px-3 py-1 text-xs font-bold ${getTestDateClass(
+                      tool.latestTestDate
+                    )}`}
+                  >
                     {formatDate(tool.latestTestDate)}
                   </span>
                 </td>

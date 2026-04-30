@@ -35,7 +35,35 @@ function formatDate(value?: string | null) {
   return `${date.getFullYear()}년 ${date.getMonth() + 1}월 ${date.getDate()}일`;
 }
 
-export default function HackToolDetailPanel({ tool }: { tool: HackTool | null }) {
+function getTestDateClass(date?: string | null) {
+  if (!date) return "border-slate-200 bg-slate-50 text-slate-500";
+
+  const testDate = new Date(date);
+  if (Number.isNaN(testDate.getTime())) {
+    return "border-slate-200 bg-slate-50 text-slate-500";
+  }
+
+  const now = new Date();
+  const diffDays = Math.floor(
+    (now.getTime() - testDate.getTime()) / (1000 * 60 * 60 * 24)
+  );
+
+  if (diffDays <= 30) {
+    return "border-emerald-200 bg-emerald-50 text-emerald-700";
+  }
+
+  if (diffDays <= 60) {
+    return "border-amber-200 bg-amber-50 text-amber-700";
+  }
+
+  return "border-red-200 bg-red-50 text-red-700";
+}
+
+export default function HackToolDetailPanel({
+  tool,
+}: {
+  tool: HackTool | null;
+}) {
   const [images, setImages] = useState<HackToolImage[]>([]);
   const [isUploading, setIsUploading] = useState(false);
   const [lightboxImage, setLightboxImage] = useState<HackToolImage | null>(null);
@@ -178,7 +206,9 @@ export default function HackToolDetailPanel({ tool }: { tool: HackTool | null })
       <aside className="sticky top-6 h-fit rounded-[28px] border border-slate-200 bg-white p-7 shadow-sm">
         <div className="mb-6 flex items-start justify-between gap-4">
           <div>
-            <h3 className="text-2xl font-extrabold text-slate-950">{tool.name}</h3>
+            <h3 className="text-2xl font-extrabold text-slate-950">
+              {tool.name}
+            </h3>
             <p className="mt-1 text-sm font-semibold text-slate-500">
               {tool.gameName || "PUBG PC"}
             </p>
@@ -189,7 +219,9 @@ export default function HackToolDetailPanel({ tool }: { tool: HackTool | null })
 
         <section className="mb-6">
           <div className="mb-3 flex items-center justify-between">
-            <h4 className="text-base font-extrabold text-slate-950">UI 이미지</h4>
+            <h4 className="text-base font-extrabold text-slate-950">
+              UI 이미지
+            </h4>
 
             <div className="flex items-center gap-2">
               <span className="text-sm font-bold text-slate-400">
@@ -198,8 +230,9 @@ export default function HackToolDetailPanel({ tool }: { tool: HackTool | null })
 
               <button
                 type="button"
+                disabled={isUploading}
                 onClick={() => inputRef.current?.click()}
-                className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-50 text-xl font-bold text-blue-600 hover:bg-blue-100"
+                className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-50 text-xl font-bold text-blue-600 hover:bg-blue-100 disabled:opacity-50"
                 title="이미지 추가"
               >
                 +
@@ -256,8 +289,24 @@ export default function HackToolDetailPanel({ tool }: { tool: HackTool | null })
 
         <div className="space-y-4">
           <InfoBox label="지역" value={tool.region || "-"} />
-          <InfoBox label="최근 테스트일" value={formatDate(tool.latestTestDate)} />
-          <InfoBox label="검측 우회 여부" value={tool.detectionBypass || "확인 전"} />
+
+          <div className="rounded-3xl border border-slate-200 bg-slate-50 px-5 py-4">
+            <p className="mb-2 text-sm font-bold text-slate-400">
+              최근 테스트일
+            </p>
+            <span
+              className={`inline-flex rounded-full border px-3 py-1 text-sm font-bold ${getTestDateClass(
+                tool.latestTestDate
+              )}`}
+            >
+              {formatDate(tool.latestTestDate)}
+            </span>
+          </div>
+
+          <InfoBox
+            label="검측 우회 여부"
+            value={tool.detectionBypass || "확인 전"}
+          />
           <InfoBox label="테스트 기능" value={tool.testFeatures || "-"} />
           <InfoBox label="핵 유형" value={tool.hackType || "일반 핵"} />
         </div>

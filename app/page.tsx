@@ -18,25 +18,13 @@ export type HackTool = {
   region: string;
   uiColorTag: string | null;
   latestTestDate?: string | null;
-
   detectionBypass?: string | null;
   testFeatures?: string | null;
   hackType?: string | null;
-
-  downloadUrl?: string | null;
-  creatorUrl?: string | null;
-  saleUrl?: string | null;
   note?: string | null;
   createdAt?: string | null;
   updatedAt?: string | null;
 };
-
-const GAME_TABS = [
-  "PUBG PC",
-  "NEW STATE MOBILE",
-  "PUBG: Blindspot",
-  "PUBG: Black Budget",
-];
 
 const REGION_TABS = ["전체", "중국", "국내", "글로벌"];
 
@@ -55,10 +43,13 @@ const COLOR_OPTIONS = [
   "기본",
 ];
 
+const HACK_TYPE_OPTIONS = ["전체", "일반 핵", "PAK핵", "반동제어 핵"];
+
 export default function Page() {
   const [game, setGame] = useState("PUBG PC");
   const [region, setRegion] = useState("전체");
   const [color, setColor] = useState("전체");
+  const [hackTypeFilter, setHackTypeFilter] = useState("전체");
   const [sort, setSort] = useState("recent");
   const [keyword, setKeyword] = useState("");
   const [viewMode, setViewMode] = useState<"table" | "card">("table");
@@ -72,9 +63,10 @@ export default function Page() {
 
   const fetchTools = async () => {
     try {
-      const res = await fetch(`/api/hack-tools?gameName=${encodeURIComponent(game)}`, {
-        cache: "no-store",
-      });
+      const res = await fetch(
+        `/api/hack-tools?gameName=${encodeURIComponent(game)}`,
+        { cache: "no-store" }
+      );
 
       if (!res.ok) {
         alert("핵툴 목록 조회에 실패했습니다.");
@@ -112,11 +104,17 @@ export default function Page() {
       next = next.filter((tool) => (tool.uiColorTag || "기본") === color);
     }
 
+    if (hackTypeFilter !== "전체") {
+      next = next.filter(
+        (tool) => (tool.hackType || "일반 핵") === hackTypeFilter
+      );
+    }
+
     const q = keyword.trim().toLowerCase();
 
     if (q) {
-      next = next.filter((tool) => {
-        return [
+      next = next.filter((tool) =>
+        [
           tool.name,
           tool.mainToolName,
           tool.region,
@@ -126,14 +124,18 @@ export default function Page() {
           tool.hackType,
         ]
           .filter(Boolean)
-          .some((value) => String(value).toLowerCase().includes(q));
-      });
+          .some((value) => String(value).toLowerCase().includes(q))
+      );
     }
 
     if (sort === "recent") {
       next.sort((a, b) => {
-        const aTime = a.latestTestDate ? new Date(a.latestTestDate).getTime() : 0;
-        const bTime = b.latestTestDate ? new Date(b.latestTestDate).getTime() : 0;
+        const aTime = a.latestTestDate
+          ? new Date(a.latestTestDate).getTime()
+          : 0;
+        const bTime = b.latestTestDate
+          ? new Date(b.latestTestDate).getTime()
+          : 0;
         return bTime - aTime;
       });
     }
@@ -143,7 +145,7 @@ export default function Page() {
     }
 
     return next;
-  }, [tools, region, color, keyword, sort]);
+  }, [tools, region, color, hackTypeFilter, keyword, sort]);
 
   const selectedTool =
     filtered.find((tool) => tool.id === selectedId) || filtered[0] || null;
@@ -238,6 +240,18 @@ export default function Page() {
               </select>
 
               <select
+                value={hackTypeFilter}
+                onChange={(e) => setHackTypeFilter(e.target.value)}
+                className="h-12 rounded-xl border border-slate-200 px-4 text-sm outline-none focus:border-blue-400 xl:w-[190px]"
+              >
+                {HACK_TYPE_OPTIONS.map((item) => (
+                  <option key={item} value={item}>
+                    핵 유형: {item}
+                  </option>
+                ))}
+              </select>
+
+              <select
                 value={sort}
                 onChange={(e) => setSort(e.target.value)}
                 className="h-12 rounded-xl border border-slate-200 px-4 text-sm outline-none focus:border-blue-400 xl:w-[180px]"
@@ -300,10 +314,10 @@ export default function Page() {
             </section>
           ) : (
             <section className="mt-4">
-              <HackToolCardView 
+              <HackToolCardView
                 tools={filtered}
                 onSelect={(tool) => setSelectedId(tool.id)}
-                 />
+              />
             </section>
           )}
         </div>

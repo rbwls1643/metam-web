@@ -42,6 +42,30 @@ function formatDate(date?: string | null) {
   return `${d.getFullYear()}년 ${d.getMonth() + 1}월 ${d.getDate()}일`;
 }
 
+function getTestDateClass(date?: string | null) {
+  if (!date) return "border-slate-200 bg-slate-50 text-slate-500";
+
+  const testDate = new Date(date);
+  if (Number.isNaN(testDate.getTime())) {
+    return "border-slate-200 bg-slate-50 text-slate-500";
+  }
+
+  const now = new Date();
+  const diffDays = Math.floor(
+    (now.getTime() - testDate.getTime()) / (1000 * 60 * 60 * 24)
+  );
+
+  if (diffDays <= 30) {
+    return "border-emerald-200 bg-emerald-50 text-emerald-700";
+  }
+
+  if (diffDays <= 60) {
+    return "border-amber-200 bg-amber-50 text-amber-700";
+  }
+
+  return "border-red-200 bg-red-50 text-red-700";
+}
+
 export default function HackToolCardView({ tools, onSelect }: Props) {
   const [imageMap, setImageMap] = useState<Record<number, HackToolImage | null>>(
     {}
@@ -66,7 +90,8 @@ export default function HackToolCardView({ tools, onSelect }: Props) {
           }
 
           const data = (await res.json()) as HackToolImage[];
-          nextMap[tool.id] = Array.isArray(data) && data.length > 0 ? data[0] : null;
+          nextMap[tool.id] =
+            Array.isArray(data) && data.length > 0 ? data[0] : null;
         } catch {
           nextMap[tool.id] = null;
         }
@@ -162,8 +187,11 @@ export default function HackToolCardView({ tools, onSelect }: Props) {
               </div>
 
               <div className="space-y-3 text-sm">
-                <InfoLine label="최근 테스트일" value={formatDate(tool.latestTestDate)} />
-                <InfoLine label="검측 우회 여부" value={tool.detectionBypass || "확인 전"} />
+                <DateLine label="최근 테스트일" date={tool.latestTestDate} />
+                <InfoLine
+                  label="검측 우회 여부"
+                  value={tool.detectionBypass || "확인 전"}
+                />
                 <InfoLine label="테스트 기능" value={tool.testFeatures || "-"} />
                 <InfoLine label="핵 유형" value={tool.hackType || "일반 핵"} />
               </div>
@@ -175,11 +203,28 @@ export default function HackToolCardView({ tools, onSelect }: Props) {
   );
 }
 
+function DateLine({ label, date }: { label: string; date?: string | null }) {
+  return (
+    <div className="flex items-start justify-between gap-3">
+      <span className="shrink-0 font-semibold text-slate-400">{label}</span>
+      <span
+        className={`rounded-full border px-3 py-1 text-xs font-bold ${getTestDateClass(
+          date
+        )}`}
+      >
+        {formatDate(date)}
+      </span>
+    </div>
+  );
+}
+
 function InfoLine({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex items-start justify-between gap-3">
       <span className="shrink-0 font-semibold text-slate-400">{label}</span>
-      <span className="break-words text-right font-bold text-slate-800">{value}</span>
+      <span className="break-words text-right font-bold text-slate-800">
+        {value}
+      </span>
     </div>
   );
 }
