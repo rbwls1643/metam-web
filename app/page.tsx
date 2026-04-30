@@ -22,6 +22,9 @@ type HackTool = {
   latestTestDate?: string | null;
   gameName?: string | null;
   createdAt?: string | null;
+  detectionBypass?: string | null;
+  testFeatures?: string | null;
+  hackType?: string | null;
 };
 
 function normalizeRegion(region?: string | null) {

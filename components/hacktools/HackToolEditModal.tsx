@@ -5,11 +5,13 @@ import { useEffect, useState } from "react";
 type HackTool = {
   id: number;
   name: string;
-  region: string;
-  uiColorTag: string | null;
-  downloadUrl: string | null;
-  creatorUrl: string | null;
-  saleUrl: string | null;
+  mainToolName?: string | null;
+  region?: string | null;
+  uiColorTag?: string | null;
+  latestTestDate?: string | null;
+  detectionBypass?: string | null;
+  testFeatures?: string | null;
+  hackType?: string | null;
   gameName?: string | null;
 };
 
@@ -20,28 +22,37 @@ type Props = {
   onUpdated: () => void;
 };
 
-type FormState = {
-  name: string;
-  region: string;
-  uiColorTag: string;
-  downloadUrl: string;
-  creatorUrl: string;
-  saleUrl: string;
-};
+const REGION_OPTIONS = ["중국", "국내", "글로벌"];
 
-const INITIAL_FORM: FormState = {
-  name: "",
-  region: "글로벌",
-  uiColorTag: "기본",
-  downloadUrl: "",
-  creatorUrl: "",
-  saleUrl: "",
-};
+const UI_COLOR_OPTIONS = [
+  "빨강",
+  "주황",
+  "노랑",
+  "초록",
+  "파랑",
+  "남색",
+  "보라",
+  "분홍",
+  "흰색",
+  "검정",
+  "기본",
+];
 
-function normalizeRegion(region?: string | null) {
-  if (!region) return "글로벌";
-  if (region === "한국") return "국내";
-  return region;
+const DETECTION_OPTIONS = ["확인 전", "우회 가능", "우회 불가", "부분 우회"];
+
+const HACK_TYPE_OPTIONS = ["PAK핵", "일반 핵", "반동제어 핵"];
+
+function toInputDate(value?: string | null) {
+  if (!value) return "";
+
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "";
+
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+
+  return `${year}-${month}-${day}`;
 }
 
 export default function HackToolEditModal({
@@ -50,34 +61,33 @@ export default function HackToolEditModal({
   onClose,
   onUpdated,
 }: Props) {
-  const [form, setForm] = useState<FormState>(INITIAL_FORM);
+  const [name, setName] = useState("");
+  const [mainToolName, setMainToolName] = useState("");
+  const [region, setRegion] = useState("글로벌");
+  const [uiColorTag, setUiColorTag] = useState("기본");
+  const [latestTestDate, setLatestTestDate] = useState("");
+  const [detectionBypass, setDetectionBypass] = useState("확인 전");
+  const [testFeatures, setTestFeatures] = useState("");
+  const [hackType, setHackType] = useState("일반 핵");
   const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
-    if (!open || !tool) {
-      setForm(INITIAL_FORM);
-      setIsSaving(false);
-      return;
-    }
+    if (!tool) return;
 
-    setForm({
-      name: tool.name || "",
-      region: normalizeRegion(tool.region),
-      uiColorTag: tool.uiColorTag || "기본",
-      downloadUrl: tool.downloadUrl || "",
-      creatorUrl: tool.creatorUrl || "",
-      saleUrl: tool.saleUrl || "",
-    });
-  }, [open, tool]);
+    setName(tool.name || "");
+    setMainToolName(tool.mainToolName || "");
+    setRegion(tool.region || "글로벌");
+    setUiColorTag(tool.uiColorTag || "기본");
+    setLatestTestDate(toInputDate(tool.latestTestDate));
+    setDetectionBypass(tool.detectionBypass || "확인 전");
+    setTestFeatures(tool.testFeatures || "");
+    setHackType(tool.hackType || "일반 핵");
+  }, [tool]);
 
   if (!open || !tool) return null;
 
-  const updateField = <K extends keyof FormState>(key: K, value: FormState[K]) => {
-    setForm((prev) => ({ ...prev, [key]: value }));
-  };
-
   const handleSubmit = async () => {
-    if (!form.name.trim()) {
+    if (!name.trim()) {
       alert("핵툴명을 입력해주세요.");
       return;
     }
@@ -91,141 +101,182 @@ export default function HackToolEditModal({
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          name: form.name.trim(),
-          region: form.region,
-          uiColorTag: form.uiColorTag,
-          downloadUrl: form.downloadUrl.trim() || null,
-          creatorUrl: form.creatorUrl.trim() || null,
-          saleUrl: form.saleUrl.trim() || null,
+          gameName: tool.gameName || "PUBG PC",
+          name: name.trim(),
+          mainToolName: mainToolName.trim() || name.trim(),
+          region,
+          uiColorTag,
+          latestTestDate: latestTestDate || null,
+          detectionBypass,
+          testFeatures: testFeatures.trim() || null,
+          hackType,
         }),
       });
 
       if (!res.ok) {
-        alert("핵툴 수정에 실패했습니다.");
+        const data = await res.json().catch(() => null);
+        alert(data?.message || "핵툴 수정에 실패했습니다.");
         return;
       }
 
       onUpdated();
       onClose();
+    } catch {
+      alert("핵툴 수정 중 오류가 발생했습니다.");
     } finally {
       setIsSaving(false);
     }
   };
 
   return (
-    <div
-      className="fixed inset-0 z-[120] flex items-center justify-center bg-black/40 p-4"
-      onClick={onClose}
-    >
-      <div
-        className="w-full max-w-[640px] rounded-3xl border border-slate-200 bg-white shadow-2xl"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div className="flex items-center justify-between border-b border-slate-200 px-6 py-5">
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/40 px-4">
+      <div className="w-full max-w-[620px] rounded-3xl bg-white p-7 shadow-2xl">
+        <div className="mb-6 flex items-center justify-between">
           <div>
-            <h2 className="text-xl font-bold text-slate-900">핵툴 수정</h2>
-            <p className="mt-1 text-sm text-slate-400">{tool.gameName || "-"}</p>
+            <h2 className="text-2xl font-extrabold text-slate-950">
+              핵툴 수정
+            </h2>
+            <p className="mt-1 text-sm font-medium text-slate-400">
+              {tool.gameName || "PUBG PC"}
+            </p>
           </div>
 
           <button
             type="button"
             onClick={onClose}
-            className="rounded-xl border border-slate-200 px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-50"
+            className="rounded-full bg-slate-100 px-4 py-2 text-sm font-bold text-slate-600 hover:bg-slate-200"
           >
             닫기
           </button>
         </div>
 
-        <div className="grid gap-4 px-6 py-6">
-          <div className="grid gap-2">
-            <label className="text-sm font-semibold text-slate-700">핵툴명</label>
+        <div className="grid grid-cols-1 gap-4">
+          <label className="space-y-2">
+            <span className="text-sm font-bold text-slate-500">핵툴명</span>
             <input
-              value={form.name}
-              onChange={(e) => updateField("name", e.target.value)}
-              className="h-11 rounded-xl border border-slate-200 px-4 text-sm outline-none focus:border-blue-400"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="핵툴명 입력"
+              className="w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm outline-none focus:border-blue-400"
             />
-          </div>
+          </label>
 
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-            <div className="grid gap-2">
-              <label className="text-sm font-semibold text-slate-700">지역</label>
+          <label className="space-y-2">
+            <span className="text-sm font-bold text-slate-500">대표명</span>
+            <input
+              value={mainToolName}
+              onChange={(e) => setMainToolName(e.target.value)}
+              placeholder="비워두면 핵툴명과 동일"
+              className="w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm outline-none focus:border-blue-400"
+            />
+          </label>
+
+          <div className="grid grid-cols-2 gap-4">
+            <label className="space-y-2">
+              <span className="text-sm font-bold text-slate-500">지역</span>
               <select
-                value={form.region}
-                onChange={(e) => updateField("region", e.target.value)}
-                className="h-11 rounded-xl border border-slate-200 px-3 text-sm outline-none focus:border-blue-400"
+                value={region}
+                onChange={(e) => setRegion(e.target.value)}
+                className="w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm outline-none focus:border-blue-400"
               >
-                <option value="중국">중국</option>
-                <option value="국내">국내</option>
-                <option value="글로벌">글로벌</option>
+                {REGION_OPTIONS.map((item) => (
+                  <option key={item} value={item}>
+                    {item}
+                  </option>
+                ))}
               </select>
-            </div>
+            </label>
 
-            <div className="grid gap-2">
-              <label className="text-sm font-semibold text-slate-700">UI 색상</label>
+            <label className="space-y-2">
+              <span className="text-sm font-bold text-slate-500">UI 색상</span>
               <select
-                value={form.uiColorTag}
-                onChange={(e) => updateField("uiColorTag", e.target.value)}
-                className="h-11 rounded-xl border border-slate-200 px-3 text-sm outline-none focus:border-blue-400"
+                value={uiColorTag}
+                onChange={(e) => setUiColorTag(e.target.value)}
+                className="w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm outline-none focus:border-blue-400"
               >
-                <option value="빨강">빨강</option>
-                <option value="주황">주황</option>
-                <option value="노랑">노랑</option>
-                <option value="초록">초록</option>
-                <option value="파랑">파랑</option>
-                <option value="남색">남색</option>
-                <option value="보라">보라</option>
-                <option value="흰색">흰색</option>
-                <option value="검정">검정</option>
-                <option value="분홍">분홍</option>
-                <option value="기본">기본</option>
+                {UI_COLOR_OPTIONS.map((item) => (
+                  <option key={item} value={item}>
+                    {item}
+                  </option>
+                ))}
               </select>
-            </div>
+            </label>
           </div>
 
-          <div className="grid gap-2">
-            <label className="text-sm font-semibold text-slate-700">다운로드 주소</label>
+          <label className="space-y-2">
+            <span className="text-sm font-bold text-slate-500">
+              최근 테스트일
+            </span>
             <input
-              value={form.downloadUrl}
-              onChange={(e) => updateField("downloadUrl", e.target.value)}
-              className="h-11 rounded-xl border border-slate-200 px-4 text-sm outline-none focus:border-blue-400"
+              type="date"
+              value={latestTestDate}
+              onChange={(e) => setLatestTestDate(e.target.value)}
+              className="w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm outline-none focus:border-blue-400"
             />
+          </label>
+
+          <div className="grid grid-cols-2 gap-4">
+            <label className="space-y-2">
+              <span className="text-sm font-bold text-slate-500">
+                검측 우회 여부
+              </span>
+              <select
+                value={detectionBypass}
+                onChange={(e) => setDetectionBypass(e.target.value)}
+                className="w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm outline-none focus:border-blue-400"
+              >
+                {DETECTION_OPTIONS.map((item) => (
+                  <option key={item} value={item}>
+                    {item}
+                  </option>
+                ))}
+              </select>
+            </label>
+
+            <label className="space-y-2">
+              <span className="text-sm font-bold text-slate-500">핵 유형</span>
+              <select
+                value={hackType}
+                onChange={(e) => setHackType(e.target.value)}
+                className="w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm outline-none focus:border-blue-400"
+              >
+                {HACK_TYPE_OPTIONS.map((item) => (
+                  <option key={item} value={item}>
+                    {item}
+                  </option>
+                ))}
+              </select>
+            </label>
           </div>
 
-          <div className="grid gap-2">
-            <label className="text-sm font-semibold text-slate-700">제작 주소</label>
-            <input
-              value={form.creatorUrl}
-              onChange={(e) => updateField("creatorUrl", e.target.value)}
-              className="h-11 rounded-xl border border-slate-200 px-4 text-sm outline-none focus:border-blue-400"
+          <label className="space-y-2">
+            <span className="text-sm font-bold text-slate-500">테스트 기능</span>
+            <textarea
+              value={testFeatures}
+              onChange={(e) => setTestFeatures(e.target.value)}
+              placeholder="예: ESP, Aimbot, No Recoil, Skin Unlock 등"
+              rows={3}
+              className="w-full resize-none rounded-2xl border border-slate-200 px-4 py-3 text-sm outline-none focus:border-blue-400"
             />
-          </div>
-
-          <div className="grid gap-2">
-            <label className="text-sm font-semibold text-slate-700">판매 주소</label>
-            <input
-              value={form.saleUrl}
-              onChange={(e) => updateField("saleUrl", e.target.value)}
-              className="h-11 rounded-xl border border-slate-200 px-4 text-sm outline-none focus:border-blue-400"
-            />
-          </div>
+          </label>
         </div>
 
-        <div className="flex justify-end gap-3 border-t border-slate-200 px-6 py-5">
+        <div className="mt-7 flex justify-end gap-3">
           <button
             type="button"
             onClick={onClose}
-            className="rounded-xl border border-slate-200 px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-50"
+            className="rounded-2xl bg-slate-100 px-5 py-3 text-sm font-bold text-slate-600 hover:bg-slate-200"
           >
             취소
           </button>
 
           <button
             type="button"
-            onClick={handleSubmit}
             disabled={isSaving}
-            className="rounded-xl bg-blue-600 px-5 py-2 text-sm font-semibold text-white transition hover:bg-blue-700 disabled:opacity-60"
+            onClick={handleSubmit}
+            className="rounded-2xl bg-blue-600 px-5 py-3 text-sm font-bold text-white hover:bg-blue-700 disabled:opacity-50"
           >
-            {isSaving ? "수정 중..." : "저장"}
+            {isSaving ? "저장 중..." : "저장"}
           </button>
         </div>
       </div>

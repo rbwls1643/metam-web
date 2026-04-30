@@ -1,3 +1,4 @@
+import { NextResponse } from "next/server";
 import { query } from "@/lib/db";
 
 type Params = {
@@ -6,15 +7,26 @@ type Params = {
   }>;
 };
 
-function normalizeRegion(region?: string | null) {
-  if (!region) return "글로벌";
-  if (region === "한국") return "국내";
-  return region;
-}
-
-function normalizeColorTag(color?: string | null) {
-  if (!color) return "기본";
-  return color;
+function mapHackTool(row: any) {
+  return {
+    id: row.id,
+    gameId: row.game_id,
+    gameName: row.game_name,
+    name: row.name,
+    mainToolName: row.main_tool_name,
+    region: row.region,
+    uiColorTag: row.ui_color_tag,
+    latestTestDate: row.latest_test_date,
+    detectionBypass: row.detection_bypass,
+    testFeatures: row.test_features,
+    hackType: row.hack_type,
+    downloadUrl: row.download_url,
+    creatorUrl: row.creator_url,
+    saleUrl: row.sale_url,
+    note: row.note,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+  };
 }
 
 export async function GET(_: Request, { params }: Params) {
@@ -24,48 +36,28 @@ export async function GET(_: Request, { params }: Params) {
     const result = await query(
       `
       SELECT
-        ht.id,
-        ht.name,
-        ht.main_tool_name AS "mainToolName",
-        ht.region,
-        ht.ui_color_tag AS "uiColorTag",
-        ht.download_url AS "downloadUrl",
-        ht.creator_url AS "creatorUrl",
-        ht.sale_url AS "saleUrl",
-        ht.note,
-        ht.latest_test_date AS "latestTestDate",
-        ht.is_active AS "isActive",
-        ht.created_by AS "createdBy",
-        ht.created_at AS "createdAt",
-        ht.updated_at AS "updatedAt",
-        g.name AS "gameName"
-      FROM hack_tools ht
-      LEFT JOIN games g
-        ON ht.game_id = g.id
-      WHERE ht.id = $1
+        h.*,
+        g.name AS game_name
+      FROM hack_tools h
+      LEFT JOIN games g ON g.id = h.game_id
+      WHERE h.id = $1
       LIMIT 1
       `,
       [id]
     );
 
     if (result.rowCount === 0) {
-      return Response.json(
-        { message: "해당 핵툴을 찾을 수 없습니다." },
+      return NextResponse.json(
+        { message: "핵툴을 찾을 수 없습니다." },
         { status: 404 }
       );
     }
 
-    const item = result.rows[0];
-
-    return Response.json({
-      ...item,
-      region: normalizeRegion(item.region),
-      uiColorTag: normalizeColorTag(item.uiColorTag),
-    });
+    return NextResponse.json(mapHackTool(result.rows[0]));
   } catch (error) {
-    console.error("핵툴 단건 조회 실패:", error);
-    return Response.json(
-      { message: "핵툴 조회 중 오류가 발생했습니다." },
+    console.error("핵툴 상세 조회 실패:", error);
+    return NextResponse.json(
+      { message: "핵툴 상세 조회에 실패했습니다." },
       { status: 500 }
     );
   }
@@ -76,83 +68,92 @@ export async function PATCH(request: Request, { params }: Params) {
     const { id } = await params;
     const body = await request.json();
 
-    const name = body.name?.trim();
-    const mainToolName = body.mainToolName?.trim() || name;
-    const region = normalizeRegion(body.region);
-    const uiColorTag = normalizeColorTag(body.uiColorTag);
-    const downloadUrl = body.downloadUrl?.trim() || null;
-    const creatorUrl = body.creatorUrl?.trim() || null;
-    const saleUrl = body.saleUrl?.trim() || null;
+    const {
+      gameName,
+      name,
+      mainToolName,
+      region,
+      uiColorTag,
+      latestTestDate,
+      detectionBypass,
+      testFeatures,
+      hackType,
+      downloadUrl,
+      creatorUrl,
+      saleUrl,
+      note,
+    } = body;
 
     if (!name) {
-      return Response.json(
-        { message: "핵툴명이 필요합니다." },
+      return NextResponse.json(
+        { message: "핵툴명은 필수입니다." },
         { status: 400 }
       );
     }
+
+    const gameResult = await query(
+      `
+      SELECT id
+      FROM games
+      WHERE name = $1
+      LIMIT 1
+      `,
+      [gameName || "PUBG PC"]
+    );
+
+    const gameId = gameResult.rows[0]?.id ?? null;
 
     const result = await query(
       `
       UPDATE hack_tools
       SET
-        name = $1,
-        main_tool_name = $2,
-        region = $3,
-        ui_color_tag = $4,
-        download_url = $5,
-        creator_url = $6,
-        sale_url = $7,
-        updated_at = NOW()
-      WHERE id = $8
-      RETURNING
-        id,
-        name,
-        main_tool_name AS "mainToolName",
-        region,
-        ui_color_tag AS "uiColorTag",
-        download_url AS "downloadUrl",
-        creator_url AS "creatorUrl",
-        sale_url AS "saleUrl",
-        note,
-        latest_test_date AS "latestTestDate",
-        is_active AS "isActive",
-        created_by AS "createdBy",
-        created_at AS "createdAt",
-        updated_at AS "updatedAt"
+        game_id = $1,
+        name = $2,
+        main_tool_name = $3,
+        region = $4,
+        ui_color_tag = $5,
+        latest_test_date = $6,
+        detection_bypass = $7,
+        test_features = $8,
+        hack_type = $9,
+        download_url = $10,
+        creator_url = $11,
+        sale_url = $12,
+        note = $13,
+        updated_at = CURRENT_TIMESTAMP
+      WHERE id = $14
+      RETURNING *
       `,
       [
+        gameId,
         name,
-        mainToolName,
-        region,
-        uiColorTag,
-        downloadUrl,
-        creatorUrl,
-        saleUrl,
+        mainToolName || null,
+        region || "글로벌",
+        uiColorTag || "기본",
+        latestTestDate || null,
+        detectionBypass || "확인 전",
+        testFeatures || null,
+        hackType || "일반 핵",
+        downloadUrl || null,
+        creatorUrl || null,
+        saleUrl || null,
+        note || null,
         id,
       ]
     );
 
     if (result.rowCount === 0) {
-      return Response.json(
+      return NextResponse.json(
         { message: "수정할 핵툴을 찾을 수 없습니다." },
         { status: 404 }
       );
     }
 
-    const item = result.rows[0];
-
-    return Response.json({
-      message: "핵툴 수정 완료",
-      item: {
-        ...item,
-        region: normalizeRegion(item.region),
-        uiColorTag: normalizeColorTag(item.uiColorTag),
-      },
-    });
+    return NextResponse.json(mapHackTool(result.rows[0]));
   } catch (error) {
     console.error("핵툴 수정 실패:", error);
-    return Response.json(
-      { message: "핵툴 수정 중 오류가 발생했습니다." },
+    return NextResponse.json(
+      { message: "핵툴 수정에 실패했습니다." },
       { status: 500 }
     );
   }
@@ -164,7 +165,10 @@ export async function DELETE(_: Request, { params }: Params) {
 
     const result = await query(
       `
-      DELETE FROM hack_tools
+      UPDATE hack_tools
+      SET
+        is_active = false,
+        updated_at = CURRENT_TIMESTAMP
       WHERE id = $1
       RETURNING id
       `,
@@ -172,20 +176,20 @@ export async function DELETE(_: Request, { params }: Params) {
     );
 
     if (result.rowCount === 0) {
-      return Response.json(
+      return NextResponse.json(
         { message: "삭제할 핵툴을 찾을 수 없습니다." },
         { status: 404 }
       );
     }
 
-    return Response.json({
-      message: "삭제 완료",
+    return NextResponse.json({
+      message: "핵툴 삭제 완료",
       id: result.rows[0].id,
     });
   } catch (error) {
     console.error("핵툴 삭제 실패:", error);
-    return Response.json(
-      { message: "삭제 중 오류가 발생했습니다." },
+    return NextResponse.json(
+      { message: "핵툴 삭제에 실패했습니다." },
       { status: 500 }
     );
   }
