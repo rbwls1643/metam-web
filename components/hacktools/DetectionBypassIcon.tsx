@@ -1,10 +1,10 @@
 "use client";
 
 function normalizeDetectionValue(value?: string | null) {
-  const text = (value || "").replace(/\s/g, "").trim();
+  const text = String(value || "").replace(/\s/g, "").trim();
 
-  if (text === "우회가능") return "우회 가능";
-  if (text === "가능") return "우회 가능";
+  if (text.includes("불가능") || text.includes("불가")) return "우회 불가능";
+  if (text.includes("가능")) return "우회 가능";
 
   return "우회 불가능";
 }
