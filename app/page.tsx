@@ -197,7 +197,7 @@ export default function Page() {
         <div className="mx-auto max-w-[1900px]">
           <AppHeader />
 
-          <GameTabs games={GAME_TABS} selectedGame={game} onChange={setGame} />
+          <GameTabs games={GAME_TABS} onChange={setGame} />
 
           <section className="mt-6 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
             <div className="mb-4 flex flex-wrap gap-2">
