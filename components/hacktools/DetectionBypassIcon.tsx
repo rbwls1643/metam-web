@@ -1,9 +1,21 @@
+"use client";
+
+function normalizeDetectionValue(value?: string | null) {
+  const text = (value || "").replace(/\s/g, "").trim();
+
+  if (text === "우회가능") return "우회 가능";
+  if (text === "가능") return "우회 가능";
+
+  return "우회 불가능";
+}
+
 export default function DetectionBypassIcon({
   value,
 }: {
   value?: string | null;
 }) {
-  const isBypass = value === "우회 가능";
+  const normalized = normalizeDetectionValue(value);
+  const isBypass = normalized === "우회 가능";
 
   return (
     <span
@@ -14,7 +26,7 @@ export default function DetectionBypassIcon({
       }`}
     >
       <span>{isBypass ? "✓" : "✕"}</span>
-      <span>{isBypass ? "우회 가능" : "우회 불가능"}</span>
+      <span>{normalized}</span>
     </span>
   );
 }
