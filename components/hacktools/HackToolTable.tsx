@@ -2,6 +2,7 @@
 
 import ColorChip from "./ColorChip";
 import NewBadge from "./NewBadge";
+import DetectionBypassIcon from "./DetectionBypassIcon";
 
 type HackTool = {
   id: number;
@@ -116,7 +117,7 @@ export default function HackToolTable({
                 </td>
 
                 <td className="px-5 py-4 font-semibold text-slate-700">
-                  {tool.detectionBypass || "확인 전"}
+                  <DetectionBypassIcon value={tool.detectionBypass} />
                 </td>
 
                 <td className="px-5 py-4 text-slate-700">
@@ -124,7 +125,7 @@ export default function HackToolTable({
                 </td>
 
                 <td className="px-5 py-4 font-semibold text-slate-700">
-                  {tool.hackType || "일반 핵"}
+                  {(tool.hackType || "일반 핵").replace("핵", "")}
                 </td>
 
                 <td className="px-5 py-4">

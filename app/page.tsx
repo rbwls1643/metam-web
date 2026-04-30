@@ -43,7 +43,7 @@ const COLOR_OPTIONS = [
   "기본",
 ];
 
-const HACK_TYPE_OPTIONS = ["전체", "일반 핵", "PAK핵", "반동제어 핵"];
+const HACK_TYPE_OPTIONS = ["전체", "일반", "PAK", "반동제어", "슬롯제"];
 
 export default function Page() {
   const [game, setGame] = useState("PUBG PC");
@@ -130,18 +130,18 @@ export default function Page() {
 
     if (sort === "recent") {
       next.sort((a, b) => {
-        const aTime = a.latestTestDate
-          ? new Date(a.latestTestDate).getTime()
-          : 0;
-        const bTime = b.latestTestDate
-          ? new Date(b.latestTestDate).getTime()
-          : 0;
+        const aTime = a.latestTestDate ? new Date(a.latestTestDate).getTime() : 0;
+        const bTime = b.latestTestDate ? new Date(b.latestTestDate).getTime() : 0;
         return bTime - aTime;
       });
     }
 
-    if (sort === "name") {
-      next.sort((a, b) => a.name.localeCompare(b.name));
+    if (sort === "old") {
+      next.sort((a, b) => {
+        const aTime = a.latestTestDate ? new Date(a.latestTestDate).getTime() : 0;
+        const bTime = b.latestTestDate ? new Date(b.latestTestDate).getTime() : 0;
+        return bTime - bTime;
+      });
     }
 
     return next;
@@ -257,7 +257,7 @@ export default function Page() {
                 className="h-12 rounded-xl border border-slate-200 px-4 text-sm outline-none focus:border-blue-400 xl:w-[180px]"
               >
                 <option value="recent">테스트일: 최근 순</option>
-                <option value="name">핵툴명 순</option>
+                <option value="old">테스트일: 오래된 순</option>
               </select>
 
               <button

@@ -25,9 +25,9 @@ const UI_COLOR_OPTIONS = [
   "기본",
 ];
 
-const DETECTION_OPTIONS = ["확인 전", "우회 가능", "우회 불가", "부분 우회"];
+const DETECTION_OPTIONS = ["우회 가능", "우회 불가"];
 
-const HACK_TYPE_OPTIONS = ["PAK핵", "일반 핵", "반동제어 핵"];
+const HACK_TYPE_OPTIONS = ["PAK", "일반", "반동제어"];
 
 export default function HackToolAddModal({
   open,
@@ -40,9 +40,9 @@ export default function HackToolAddModal({
   const [region, setRegion] = useState("글로벌");
   const [uiColorTag, setUiColorTag] = useState("기본");
   const [latestTestDate, setLatestTestDate] = useState("");
-  const [detectionBypass, setDetectionBypass] = useState("확인 전");
+  const [detectionBypass, setDetectionBypass] = useState("우회 불가능");
   const [testFeatures, setTestFeatures] = useState("");
-  const [hackType, setHackType] = useState("일반 핵");
+  const [hackType, setHackType] = useState("일반");
   const [isSaving, setIsSaving] = useState(false);
 
   if (!open) return null;
@@ -53,9 +53,9 @@ export default function HackToolAddModal({
     setRegion("글로벌");
     setUiColorTag("기본");
     setLatestTestDate("");
-    setDetectionBypass("확인 전");
+    setDetectionBypass("우회 불가능");
     setTestFeatures("");
-    setHackType("일반 핵");
+    setHackType("일반");
   };
 
   const handleSubmit = async () => {

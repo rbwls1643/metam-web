@@ -40,7 +40,7 @@ const UI_COLOR_OPTIONS = [
 
 const DETECTION_OPTIONS = ["확인 전", "우회 가능", "우회 불가", "부분 우회"];
 
-const HACK_TYPE_OPTIONS = ["PAK핵", "일반 핵", "반동제어 핵"];
+const HACK_TYPE_OPTIONS = ["PAK", "일반", "반동제어"];
 
 function toInputDate(value?: string | null) {
   if (!value) return "";
@@ -66,9 +66,9 @@ export default function HackToolEditModal({
   const [region, setRegion] = useState("글로벌");
   const [uiColorTag, setUiColorTag] = useState("기본");
   const [latestTestDate, setLatestTestDate] = useState("");
-  const [detectionBypass, setDetectionBypass] = useState("확인 전");
+  const [detectionBypass, setDetectionBypass] = useState("우회 불가능");
   const [testFeatures, setTestFeatures] = useState("");
-  const [hackType, setHackType] = useState("일반 핵");
+  const [hackType, setHackType] = useState("일반");
   const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
@@ -79,9 +79,9 @@ export default function HackToolEditModal({
     setRegion(tool.region || "글로벌");
     setUiColorTag(tool.uiColorTag || "기본");
     setLatestTestDate(toInputDate(tool.latestTestDate));
-    setDetectionBypass(tool.detectionBypass || "확인 전");
+    setDetectionBypass(tool.detectionBypass || "우회 불가능");
     setTestFeatures(tool.testFeatures || "");
-    setHackType(tool.hackType || "일반 핵");
+    setHackType(tool.hackType || "일반");
   }, [tool]);
 
   if (!open || !tool) return null;
