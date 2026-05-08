@@ -16,7 +16,7 @@ export type HackTool = {
   name: string;
   mainToolName?: string | null;
   region: string;
-  uiColorTag: string | null;
+  uiColorTag?: string | null;
   latestTestDate?: string | null;
   detectionBypass?: string | null;
   testFeatures?: string | null;
@@ -44,12 +44,24 @@ const COLOR_OPTIONS = [
 ];
 
 const HACK_TYPE_OPTIONS = ["전체", "일반", "PAK", "반동제어", "슬롯제"];
+const DETECTION_OPTIONS = ["전체", "-", "우회 가능", "우회 불가"];
+
+function normalizeDetectionValue(value?: string | null) {
+  const text = String(value || "").replace(/\s/g, "").trim();
+
+  if (!text) return "-";
+  if (text.includes("불가능") || text.includes("불가")) return "우회 불가";
+  if (text.includes("가능")) return "우회 가능";
+
+  return "-";
+}
 
 export default function Page() {
   const [game, setGame] = useState("PUBG PC");
   const [region, setRegion] = useState("전체");
   const [color, setColor] = useState("전체");
   const [hackTypeFilter, setHackTypeFilter] = useState("전체");
+  const [detectionFilter, setDetectionFilter] = useState("전체");
   const [sort, setSort] = useState("recent");
   const [keyword, setKeyword] = useState("");
   const [viewMode, setViewMode] = useState<"table" | "card">("table");
@@ -110,6 +122,13 @@ export default function Page() {
       );
     }
 
+    if (detectionFilter !== "전체") {
+      next = next.filter(
+        (tool) =>
+          normalizeDetectionValue(tool.detectionBypass) === detectionFilter
+      );
+    }
+
     const q = keyword.trim().toLowerCase();
 
     if (q) {
@@ -140,12 +159,12 @@ export default function Page() {
       next.sort((a, b) => {
         const aTime = a.latestTestDate ? new Date(a.latestTestDate).getTime() : 0;
         const bTime = b.latestTestDate ? new Date(b.latestTestDate).getTime() : 0;
-        return bTime - bTime;
+        return aTime - bTime;
       });
     }
 
     return next;
-  }, [tools, region, color, hackTypeFilter, keyword, sort]);
+  }, [tools, region, color, hackTypeFilter, detectionFilter, keyword, sort]);
 
   const selectedTool =
     filtered.find((tool) => tool.id === selectedId) || filtered[0] || null;
@@ -252,12 +271,24 @@ export default function Page() {
               </select>
 
               <select
+                value={detectionFilter}
+                onChange={(e) => setDetectionFilter(e.target.value)}
+                className="h-12 rounded-xl border border-slate-200 px-4 text-sm outline-none focus:border-blue-400 xl:w-[210px]"
+              >
+                {DETECTION_OPTIONS.map((item) => (
+                  <option key={item} value={item}>
+                    검측 우회: {item}
+                  </option>
+                ))}
+              </select>
+
+              <select
                 value={sort}
                 onChange={(e) => setSort(e.target.value)}
-                className="h-12 rounded-xl border border-slate-200 px-4 text-sm outline-none focus:border-blue-400 xl:w-[180px]"
+                className="h-12 rounded-xl border border-slate-200 px-4 text-sm outline-none focus:border-blue-400 xl:w-[170px]"
               >
-                <option value="recent">테스트일: 최근 순</option>
-                <option value="old">테스트일: 오래된 순</option>
+                <option value="recent">최근 순</option>
+                <option value="old">오래된 순</option>
               </select>
 
               <button

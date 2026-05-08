@@ -3,10 +3,11 @@
 function normalizeDetectionValue(value?: string | null) {
   const text = String(value || "").replace(/\s/g, "").trim();
 
-  if (text.includes("불가능") || text.includes("불가")) return "우회 불가능";
+  if (!text) return "-";
+  if (text.includes("불가능") || text.includes("불가")) return "우회 불가";
   if (text.includes("가능")) return "우회 가능";
 
-  return "우회 불가능";
+  return "-";
 }
 
 export default function DetectionBypassIcon({
@@ -15,6 +16,15 @@ export default function DetectionBypassIcon({
   value?: string | null;
 }) {
   const normalized = normalizeDetectionValue(value);
+
+  if (normalized === "-") {
+    return (
+      <span className="inline-flex items-center rounded-full bg-slate-100 px-3 py-1 text-xs font-bold text-slate-500">
+        -
+      </span>
+    );
+  }
+
   const isBypass = normalized === "우회 가능";
 
   return (

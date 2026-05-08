@@ -1,14 +1,14 @@
 "use client";
 
 import ColorChip from "./ColorChip";
-import NewBadge from "./NewBadge";
 import DetectionBypassIcon from "./DetectionBypassIcon";
+import NewBadge from "./NewBadge";
 
 type HackTool = {
   id: number;
   name: string;
   region: string;
-  uiColorTag: string | null;
+  uiColorTag?: string | null;
   latestTestDate?: string | null;
   detectionBypass?: string | null;
   testFeatures?: string | null;
@@ -26,16 +26,13 @@ type Props = {
 
 function formatDate(date?: string | null) {
   if (!date) return "-";
-
   const d = new Date(date);
   if (Number.isNaN(d.getTime())) return "-";
-
   return `${d.getFullYear()}년 ${d.getMonth() + 1}월 ${d.getDate()}일`;
 }
 
 function getTestDateClass(date?: string | null) {
   if (!date) return "border-slate-200 bg-slate-50 text-slate-500";
-
   const testDate = new Date(date);
   if (Number.isNaN(testDate.getTime())) {
     return "border-slate-200 bg-slate-50 text-slate-500";
@@ -46,15 +43,13 @@ function getTestDateClass(date?: string | null) {
     (now.getTime() - testDate.getTime()) / (1000 * 60 * 60 * 24)
   );
 
-  if (diffDays <= 30) {
-    return "border-emerald-200 bg-emerald-50 text-emerald-700";
-  }
-
-  if (diffDays <= 60) {
-    return "border-amber-200 bg-amber-50 text-amber-700";
-  }
-
+  if (diffDays <= 30) return "border-emerald-200 bg-emerald-50 text-emerald-700";
+  if (diffDays <= 60) return "border-amber-200 bg-amber-50 text-amber-700";
   return "border-red-200 bg-red-50 text-red-700";
+}
+
+function cleanHackType(value?: string | null) {
+  return (value || "일반").replace(" 핵", "").replace("핵", "");
 }
 
 export default function HackToolTable({
@@ -67,7 +62,19 @@ export default function HackToolTable({
   return (
     <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white">
       <div className="overflow-x-auto">
-        <table className="w-full min-w-[1200px] text-sm">
+        <table className="w-full min-w-[1250px] table-fixed text-sm">
+          <colgroup>
+            <col className="w-[50px]" />
+            <col className="w-[120px]" />
+            <col className="w-[170px]" />
+            <col className="w-[90px]" />
+            <col className="w-[145px]" />
+            <col className="w-[155px]" />
+            <col />
+            <col className="w-[120px]" />
+            <col className="w-[120px]" />
+          </colgroup>
+
           <thead className="bg-slate-50 text-slate-500">
             <tr className="border-b border-slate-200">
               <th className="px-5 py-4 text-left font-bold">#</th>
@@ -98,8 +105,8 @@ export default function HackToolTable({
                 </td>
 
                 <td className="px-5 py-4">
-                  <div className="flex items-center gap-2 font-bold text-slate-900">
-                    {tool.name}
+                  <div className="flex items-center gap-2 truncate font-bold text-slate-900">
+                    <span className="truncate">{tool.name}</span>
                     <NewBadge createdAt={tool.createdAt} />
                   </div>
                 </td>
@@ -116,16 +123,21 @@ export default function HackToolTable({
                   </span>
                 </td>
 
-                <td className="px-5 py-4 font-semibold text-slate-700">
+                <td className="px-5 py-4">
                   <DetectionBypassIcon value={tool.detectionBypass} />
                 </td>
 
-                <td className="px-5 py-4 text-slate-700">
-                  {tool.testFeatures || "-"}
+                <td className="px-5 py-4">
+                  <div
+                    className="truncate font-semibold text-slate-700"
+                    title={tool.testFeatures || "-"}
+                  >
+                    {tool.testFeatures || "-"}
+                  </div>
                 </td>
 
                 <td className="px-5 py-4 font-semibold text-slate-700">
-                  {(tool.hackType || "일반 핵").replace("핵", "")}
+                  {cleanHackType(tool.hackType)}
                 </td>
 
                 <td className="px-5 py-4">

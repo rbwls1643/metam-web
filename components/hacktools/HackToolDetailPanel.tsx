@@ -29,34 +29,23 @@ type HackTool = {
 
 function formatDate(value?: string | null) {
   if (!value) return "-";
-
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return "-";
-
   return `${date.getFullYear()}년 ${date.getMonth() + 1}월 ${date.getDate()}일`;
 }
 
 function getTestDateClass(value?: string | null) {
   if (!value) return "border-slate-200 bg-slate-50 text-slate-500";
-
   const date = new Date(value);
-  if (Number.isNaN(date.getTime())) {
-    return "border-slate-200 bg-slate-50 text-slate-500";
-  }
+  if (Number.isNaN(date.getTime())) return "border-slate-200 bg-slate-50 text-slate-500";
 
   const now = new Date();
   const diffDays = Math.floor(
     (now.getTime() - date.getTime()) / (1000 * 60 * 60 * 24)
   );
 
-  if (diffDays <= 30) {
-    return "border-emerald-200 bg-emerald-50 text-emerald-700";
-  }
-
-  if (diffDays <= 60) {
-    return "border-amber-200 bg-amber-50 text-amber-700";
-  }
-
+  if (diffDays <= 30) return "border-emerald-200 bg-emerald-50 text-emerald-700";
+  if (diffDays <= 60) return "border-amber-200 bg-amber-50 text-amber-700";
   return "border-red-200 bg-red-50 text-red-700";
 }
 
@@ -64,14 +53,11 @@ function cleanHackType(value?: string | null) {
   return (value || "일반").replace(" 핵", "").replace("핵", "");
 }
 
-export default function HackToolDetailPanel({
-  tool,
-}: {
-  tool: HackTool | null;
-}) {
+export default function HackToolDetailPanel({ tool }: { tool: HackTool | null }) {
   const [images, setImages] = useState<HackToolImage[]>([]);
+  const [activeIndex, setActiveIndex] = useState(0);
   const [isUploading, setIsUploading] = useState(false);
-  const [lightboxImage, setLightboxImage] = useState<HackToolImage | null>(null);
+  const [lightboxOpen, setLightboxOpen] = useState(false);
   const inputRef = useRef<HTMLInputElement | null>(null);
 
   const fetchImages = async (hackToolId: number) => {
@@ -81,34 +67,43 @@ export default function HackToolDetailPanel({
       });
 
       const data = await res.json();
-
-      if (!res.ok) {
-        setImages([]);
-        return;
-      }
-
-      setImages(Array.isArray(data) ? data : []);
+      setImages(res.ok && Array.isArray(data) ? data : []);
+      setActiveIndex(0);
     } catch {
       setImages([]);
+      setActiveIndex(0);
     }
   };
 
   useEffect(() => {
     if (!tool?.id) {
       setImages([]);
+      setActiveIndex(0);
       return;
     }
 
     fetchImages(tool.id);
   }, [tool?.id]);
 
+  const activeImage = images[activeIndex] || null;
+
+  const goPrev = () => {
+    if (images.length === 0) return;
+    setActiveIndex((prev) => (prev - 1 + images.length) % images.length);
+  };
+
+  const goNext = () => {
+    if (images.length === 0) return;
+    setActiveIndex((prev) => (prev + 1) % images.length);
+  };
+
   useEffect(() => {
-    if (!lightboxImage) return;
+    if (!lightboxOpen) return;
 
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
-        setLightboxImage(null);
-      }
+      if (event.key === "Escape") setLightboxOpen(false);
+      if (event.key === "ArrowLeft") goPrev();
+      if (event.key === "ArrowRight") goNext();
     };
 
     document.addEventListener("keydown", handleKeyDown, true);
@@ -118,7 +113,7 @@ export default function HackToolDetailPanel({
       document.removeEventListener("keydown", handleKeyDown, true);
       document.body.style.overflow = "";
     };
-  }, [lightboxImage]);
+  }, [lightboxOpen, images.length]);
 
   const handleImageUpload = async (file: File) => {
     if (!tool?.id) return;
@@ -188,13 +183,11 @@ export default function HackToolDetailPanel({
       }
 
       if (tool?.id) await fetchImages(tool.id);
-      setLightboxImage(null);
+      setLightboxOpen(false);
     } catch {
       alert("이미지 삭제 중 오류가 발생했습니다.");
     }
   };
-
-  const mainImage = images[0] || null;
 
   if (!tool) {
     return (
@@ -211,9 +204,7 @@ export default function HackToolDetailPanel({
       <aside className="sticky top-6 h-fit rounded-[28px] border border-slate-200 bg-white p-7 shadow-sm">
         <div className="mb-6 flex items-start justify-between gap-4">
           <div>
-            <h3 className="text-2xl font-extrabold text-slate-950">
-              {tool.name}
-            </h3>
+            <h3 className="text-2xl font-extrabold text-slate-950">{tool.name}</h3>
             <p className="mt-1 text-sm font-semibold text-slate-500">
               {tool.gameName || "PUBG PC"}
             </p>
@@ -224,9 +215,7 @@ export default function HackToolDetailPanel({
 
         <section className="mb-6">
           <div className="mb-3 flex items-center justify-between">
-            <h4 className="text-base font-extrabold text-slate-950">
-              UI 이미지
-            </h4>
+            <h4 className="text-base font-extrabold text-slate-950">UI 이미지</h4>
 
             <div className="flex items-center gap-2">
               <span className="text-sm font-bold text-slate-400">
@@ -243,10 +232,10 @@ export default function HackToolDetailPanel({
                 +
               </button>
 
-              {mainImage && (
+              {activeImage && (
                 <button
                   type="button"
-                  onClick={() => handleDeleteImage(mainImage.id)}
+                  onClick={() => handleDeleteImage(activeImage.id)}
                   className="flex h-10 w-10 items-center justify-center rounded-full bg-red-50 text-red-500 hover:bg-red-100"
                   title="이미지 삭제"
                 >
@@ -268,18 +257,67 @@ export default function HackToolDetailPanel({
             </div>
           </div>
 
-          {mainImage ? (
-            <button
-              type="button"
-              onClick={() => setLightboxImage(mainImage)}
-              className="block w-full overflow-hidden rounded-[24px] border border-slate-200 bg-slate-50"
-            >
-              <img
-                src={mainImage.filePath}
-                alt={mainImage.fileName}
-                className="h-[320px] w-full object-cover"
-              />
-            </button>
+          {activeImage ? (
+            <>
+              <div className="relative overflow-hidden rounded-[24px] border border-slate-200 bg-slate-50">
+                <button
+                  type="button"
+                  onClick={() => setLightboxOpen(true)}
+                  className="block w-full"
+                >
+                  <img
+                    src={activeImage.filePath}
+                    alt={activeImage.fileName}
+                    className="h-[320px] w-full object-cover"
+                  />
+                </button>
+
+                {images.length > 1 && (
+                  <>
+                    <button
+                      type="button"
+                      onClick={goPrev}
+                      className="absolute left-3 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full bg-white/90 text-lg font-black text-slate-700 shadow"
+                    >
+                      ‹
+                    </button>
+                    <button
+                      type="button"
+                      onClick={goNext}
+                      className="absolute right-3 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full bg-white/90 text-lg font-black text-slate-700 shadow"
+                    >
+                      ›
+                    </button>
+                    <div className="absolute bottom-3 left-1/2 -translate-x-1/2 rounded-full bg-black/55 px-3 py-1 text-xs font-bold text-white">
+                      {activeIndex + 1} / {images.length}
+                    </div>
+                  </>
+                )}
+              </div>
+
+              {images.length > 1 && (
+                <div className="mt-3 flex gap-2 overflow-x-auto pb-1">
+                  {images.map((image, index) => (
+                    <button
+                      key={image.id}
+                      type="button"
+                      onClick={() => setActiveIndex(index)}
+                      className={`h-16 w-20 shrink-0 overflow-hidden rounded-xl border ${
+                        index === activeIndex
+                          ? "border-blue-500 ring-2 ring-blue-100"
+                          : "border-slate-200"
+                      }`}
+                    >
+                      <img
+                        src={image.filePath}
+                        alt={image.fileName}
+                        className="h-full w-full object-cover"
+                      />
+                    </button>
+                  ))}
+                </div>
+              )}
+            </>
           ) : (
             <div
               onClick={() => inputRef.current?.click()}
@@ -299,9 +337,7 @@ export default function HackToolDetailPanel({
           <InfoBox label="지역" value={tool.region || "-"} />
 
           <div className="rounded-3xl border border-slate-200 bg-slate-50 px-5 py-4">
-            <p className="mb-2 text-sm font-bold text-slate-400">
-              최근 테스트일
-            </p>
+            <p className="mb-2 text-sm font-bold text-slate-400">최근 테스트일</p>
             <span
               className={`inline-flex rounded-full border px-3 py-1 text-sm font-bold ${getTestDateClass(
                 tool.latestTestDate
@@ -312,9 +348,7 @@ export default function HackToolDetailPanel({
           </div>
 
           <div className="rounded-3xl border border-slate-200 bg-slate-50 px-5 py-4">
-            <p className="mb-2 text-sm font-bold text-slate-400">
-              검측 우회 여부
-            </p>
+            <p className="mb-2 text-sm font-bold text-slate-400">검측 우회 여부</p>
             <DetectionBypassIcon value={tool.detectionBypass} />
           </div>
 
@@ -323,22 +357,51 @@ export default function HackToolDetailPanel({
         </div>
       </aside>
 
-      {lightboxImage && (
+      {lightboxOpen && activeImage && (
         <div
-          className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/80 p-6"
-          onClick={() => setLightboxImage(null)}
+          className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/85 p-6"
+          onClick={() => setLightboxOpen(false)}
         >
           <button
             type="button"
-            onClick={() => setLightboxImage(null)}
+            onClick={() => setLightboxOpen(false)}
             className="absolute right-6 top-6 rounded-full bg-white px-4 py-2 text-sm font-bold text-slate-900"
           >
             닫기
           </button>
 
+          {images.length > 1 && (
+            <>
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  goPrev();
+                }}
+                className="absolute left-6 top-1/2 flex h-12 w-12 -translate-y-1/2 items-center justify-center rounded-full bg-white/90 text-3xl font-black text-slate-800"
+              >
+                ‹
+              </button>
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  goNext();
+                }}
+                className="absolute right-6 top-1/2 flex h-12 w-12 -translate-y-1/2 items-center justify-center rounded-full bg-white/90 text-3xl font-black text-slate-800"
+              >
+                ›
+              </button>
+
+              <div className="absolute bottom-6 left-1/2 -translate-x-1/2 rounded-full bg-white/90 px-4 py-2 text-sm font-bold text-slate-900">
+                {activeIndex + 1} / {images.length}
+              </div>
+            </>
+          )}
+
           <img
-            src={lightboxImage.filePath}
-            alt={lightboxImage.fileName}
+            src={activeImage.filePath}
+            alt={activeImage.fileName}
             onClick={(e) => e.stopPropagation()}
             className="max-h-[92vh] max-w-[92vw] rounded-2xl object-contain shadow-2xl"
           />
