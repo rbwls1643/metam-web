@@ -135,7 +135,7 @@ export default function HackToolAddModal({
           </label>
 
           <label className="space-y-2">
-            <span className="text-sm font-bold text-slate-500">대표명</span>
+            <span className="text-sm font-bold text-slate-500">동일 핵툴명</span>
             <input
               value={mainToolName}
               onChange={(e) => setMainToolName(e.target.value)}
