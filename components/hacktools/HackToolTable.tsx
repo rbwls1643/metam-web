@@ -26,13 +26,16 @@ type Props = {
 
 function formatDate(date?: string | null) {
   if (!date) return "-";
+
   const d = new Date(date);
   if (Number.isNaN(d.getTime())) return "-";
+
   return `${d.getFullYear()}년 ${d.getMonth() + 1}월 ${d.getDate()}일`;
 }
 
 function getTestDateClass(date?: string | null) {
   if (!date) return "border-slate-200 bg-slate-50 text-slate-500";
+
   const testDate = new Date(date);
   if (Number.isNaN(testDate.getTime())) {
     return "border-slate-200 bg-slate-50 text-slate-500";
@@ -45,6 +48,7 @@ function getTestDateClass(date?: string | null) {
 
   if (diffDays <= 30) return "border-emerald-200 bg-emerald-50 text-emerald-700";
   if (diffDays <= 60) return "border-amber-200 bg-amber-50 text-amber-700";
+
   return "border-red-200 bg-red-50 text-red-700";
 }
 
@@ -62,30 +66,46 @@ export default function HackToolTable({
   return (
     <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white">
       <div className="overflow-x-auto">
-        <table className="w-full min-w-[1250px] table-fixed text-sm">
+        <table className="w-full min-w-[1450px] table-fixed text-sm">
           <colgroup>
-            <col className="w-[50px]" />
-            <col className="w-[120px]" />
+            <col className="w-[60px]" />
+            <col className="w-[130px]" />
+            <col className="w-[190px]" />
+            <col className="w-[110px]" />
+            <col className="w-[190px]" />
             <col className="w-[170px]" />
-            <col className="w-[90px]" />
-            <col className="w-[145px]" />
-            <col className="w-[155px]" />
             <col />
-            <col className="w-[120px]" />
+            <col className="w-[130px]" />
             <col className="w-[120px]" />
           </colgroup>
 
           <thead className="bg-slate-50 text-slate-500">
             <tr className="border-b border-slate-200">
-              <th className="px-5 py-4 text-left font-bold">#</th>
-              <th className="px-5 py-4 text-left font-bold">UI 색상</th>
-              <th className="px-5 py-4 text-left font-bold">핵툴명</th>
-              <th className="px-5 py-4 text-left font-bold">지역</th>
-              <th className="px-5 py-4 text-left font-bold">최근 테스트일</th>
-              <th className="px-5 py-4 text-left font-bold">검측 우회 여부</th>
-              <th className="px-5 py-4 text-left font-bold">테스트 기능</th>
-              <th className="px-5 py-4 text-left font-bold">핵 유형</th>
-              <th className="px-5 py-4 text-right font-bold">관리</th>
+              <th className="px-5 py-4 text-center align-middle font-bold">#</th>
+              <th className="px-5 py-4 text-center align-middle font-bold">
+                UI 색상
+              </th>
+              <th className="px-5 py-4 text-center align-middle font-bold">
+                핵툴명
+              </th>
+              <th className="px-5 py-4 text-center align-middle font-bold">
+                지역
+              </th>
+              <th className="px-5 py-4 text-center align-middle font-bold">
+                최근 테스트일
+              </th>
+              <th className="px-5 py-4 text-center align-middle font-bold">
+                검측 우회 여부
+              </th>
+              <th className="px-5 py-4 text-center align-middle font-bold">
+                테스트 기능
+              </th>
+              <th className="px-5 py-4 text-center align-middle font-bold">
+                핵 유형
+              </th>
+              <th className="px-5 py-4 text-center align-middle font-bold">
+                관리
+              </th>
             </tr>
           </thead>
 
@@ -94,28 +114,34 @@ export default function HackToolTable({
               <tr
                 key={tool.id}
                 onClick={() => onRowSelect(tool)}
-                className={`cursor-pointer border-b border-slate-100 transition hover:bg-slate-50 ${
+                className={`h-[74px] cursor-pointer border-b border-slate-100 transition hover:bg-slate-50 ${
                   selectedId === tool.id ? "bg-blue-50/60" : "bg-white"
                 }`}
               >
-                <td className="px-5 py-4 text-slate-400">{index + 1}</td>
-
-                <td className="px-5 py-4">
-                  <ColorChip color={tool.uiColorTag} />
+                <td className="px-5 py-4 text-center align-middle text-slate-400">
+                  {index + 1}
                 </td>
 
-                <td className="px-5 py-4">
-                  <div className="flex items-center gap-2 truncate font-bold text-slate-900">
+                <td className="px-5 py-4 text-center align-middle">
+                  <div className="flex justify-center">
+                    <ColorChip color={tool.uiColorTag} />
+                  </div>
+                </td>
+
+                <td className="px-5 py-4 align-middle">
+                  <div className="flex min-w-0 items-center justify-center gap-2 font-bold text-slate-900">
                     <span className="truncate">{tool.name}</span>
                     <NewBadge createdAt={tool.createdAt} />
                   </div>
                 </td>
 
-                <td className="px-5 py-4 text-slate-600">{tool.region}</td>
+                <td className="px-5 py-4 text-center align-middle text-slate-600">
+                  {tool.region}
+                </td>
 
-                <td className="px-5 py-4">
+                <td className="px-5 py-4 text-center align-middle">
                   <span
-                    className={`rounded-full border px-3 py-1 text-xs font-bold ${getTestDateClass(
+                    className={`inline-flex whitespace-nowrap rounded-full border px-3 py-1 text-xs font-bold ${getTestDateClass(
                       tool.latestTestDate
                     )}`}
                   >
@@ -123,25 +149,27 @@ export default function HackToolTable({
                   </span>
                 </td>
 
-                <td className="px-5 py-4">
-                  <DetectionBypassIcon value={tool.detectionBypass} />
+                <td className="px-5 py-4 text-center align-middle">
+                  <div className="flex justify-center">
+                    <DetectionBypassIcon value={tool.detectionBypass} />
+                  </div>
                 </td>
 
-                <td className="px-5 py-4">
+                <td className="px-5 py-4 align-middle">
                   <div
-                    className="truncate font-semibold text-slate-700"
+                    className="truncate text-center font-semibold text-slate-700"
                     title={tool.testFeatures || "-"}
                   >
                     {tool.testFeatures || "-"}
                   </div>
                 </td>
 
-                <td className="px-5 py-4 font-semibold text-slate-700">
+                <td className="px-5 py-4 text-center align-middle font-semibold text-slate-700">
                   {cleanHackType(tool.hackType)}
                 </td>
 
-                <td className="px-5 py-4">
-                  <div className="flex justify-end gap-2">
+                <td className="px-5 py-4 text-center align-middle">
+                  <div className="flex justify-center gap-2">
                     <button
                       type="button"
                       onClick={(event) => {
